@@ -4,6 +4,7 @@ import Dashboard from "./dashboard/dashboard";
 import Rank from "./rank/rank";
 import Placement from "./placement/placement";
 import RegisterUser from "./admin/registerUser";
+import StudentResults from "./results/StudentResults";
 function App() {
   return (
     <BrowserRouter>
@@ -13,6 +14,10 @@ function App() {
          <Route path="/rank" element={<Rank />} />
          <Route path="/placement" element={<Placement />} />
          <Route path="/register-user" element={<RegisterUser />} />
+         <Route
+  path="/student-results"
+  element={<StudentResults />}
+/>
       </Routes>
     </BrowserRouter>
   );

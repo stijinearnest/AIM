@@ -10,7 +10,7 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from .models import Result
 from students.models import Department, Student, programme
-from .serializers import RankListSerializer, RankUpdateSerializer
+from .serializers import RankListSerializer, RankUpdateSerializer, StudentResultSerializer
 
 
 def parse_int_param(value, field_name):
@@ -88,7 +88,7 @@ def resolve_programme_ids(filters):
 
 @method_decorator(never_cache, name="dispatch")
 class ResultAddView(APIView):
-    permission_classes = [IsAuthenticated]
+    #permission_classes = [IsAuthenticated]
     
     def post(self, request):
         serializer = RankUpdateSerializer(data=request.data)
@@ -290,3 +290,44 @@ class resultListView(APIView):
             context={"programmes": programmes},
         )
         return Response(serializer.data, status=status.HTTP_200_OK)
+class StudentResultsView(APIView):
+
+    def get(self, request):
+
+        department_id = request.query_params.get("department_id")
+        programme_id = request.query_params.get("programme_id")
+        year_of_admn = request.query_params.get("year_of_admn")
+        result_year = request.query_params.get("result_year")
+
+        results = Result.objects.select_related(
+            "student",
+            "student__programme",
+            "student__programme__department",
+        )
+
+        if department_id:
+            results = results.filter(
+                student__programme__department_id=department_id
+            )
+
+        if programme_id:
+            results = results.filter(
+                student__programme_id=programme_id
+            )
+
+        if year_of_admn:
+            results = results.filter(
+                student__year_of_admn=year_of_admn
+            )
+
+        if result_year:
+            results = results.filter(
+                result_year=result_year
+            )
+
+        serializer = StudentResultSerializer(
+            results,
+            many=True,
+        )
+
+        return Response(serializer.data)

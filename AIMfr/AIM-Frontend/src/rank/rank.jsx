@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { apiGet, apiPost } from "../api/apiService";
 import aimLogo from "../assets/aim-logo1.png";
@@ -37,12 +37,36 @@ export default function Rank() {
   const [errorMessage, setErrorMessage] = useState("");
   const [programmes, setProgrammes] = useState([]);
   const [students, setStudents] = useState([]);
+  const [departments, setDepartments] = useState([]);
+  const [filterProgrammes, setFilterProgrammes] = useState([]);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const containerRef = useRef(null);
+
+  const [filters, setFilters] = useState({
+    department_id: "",
+    programme_id: "",
+    year_of_admn: "",
+  });
 
   const [resultForm, setResultForm] = useState({
     result_year: new Date().getFullYear(),
     programme_id: "",
     year_of_admn: "",
   });
+
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      if (containerRef.current) {
+        const rect = containerRef.current.getBoundingClientRect();
+        const x = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
+        const y = ((e.clientY - rect.top) / rect.height - 0.5) * 2;
+        setMousePosition({ x, y });
+      }
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, []);
 
   const loadRanks = useCallback(async () => {
     try {
@@ -139,6 +163,75 @@ export default function Rank() {
       console.error(error);
     }
   };
+  const loadDepartments = async () => {
+  try {
+    const response = await apiGet("/students/departments/");
+    setDepartments(response.departments || []);
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+const loadFilterProgrammes = async (departmentId) => {
+  if (!departmentId) {
+    setFilterProgrammes([]);
+    return;
+  }
+
+  try {
+    const response = await apiGet(
+      `/students/programmes/?department_id=${departmentId}`
+    );
+
+    setFilterProgrammes(response.programmes || []);
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+const applyFilters = async () => {
+  try {
+    setLoading(true);
+
+    const queryParams = [];
+
+    if (filters.department_id) {
+      queryParams.push(`department_id=${filters.department_id}`);
+    }
+
+    if (filters.programme_id) {
+      queryParams.push(`programme_id=${filters.programme_id}`);
+    }
+
+    if (filters.year_of_admn) {
+      queryParams.push(`year_of_admn=${filters.year_of_admn}`);
+    }
+
+    const query =
+      queryParams.length > 0
+        ? `/result?${queryParams.join("&")}`
+        : "/result";
+
+    const rankList = await apiGet(query);
+
+    setRanks(rankList);
+  } catch (error) {
+    console.error(error);
+  } finally {
+    setLoading(false);
+  }
+};
+
+const resetFilters = () => {
+  setFilters({
+    department_id: "",
+    programme_id: "",
+    year_of_admn: "",
+  });
+
+  setFilterProgrammes([]);
+  loadRanks();
+};
 
   const openAddResultModal = async () => {
     await loadProgrammes();
@@ -167,12 +260,16 @@ export default function Rank() {
   };
 
   useEffect(() => {
-    const timeoutId = window.setTimeout(() => {
-      loadRanks();
-    }, 0);
+  const timeoutId = window.setTimeout(async () => {
+    await loadRanks();
 
-    return () => window.clearTimeout(timeoutId);
-  }, [loadRanks]);
+    if (isAdmin) {
+      await loadDepartments();
+    }
+  }, 0);
+
+  return () => window.clearTimeout(timeoutId);
+}, [loadRanks, isAdmin]);
 
   const saveResults = async () => {
     try {
@@ -246,30 +343,116 @@ export default function Rank() {
   }
 
   return (
-    <div style={styles.page}>
-      {/* Ambient starfield + orbit arcs */}
+    <div style={styles.page} ref={containerRef}>
+      {/* ambient starfield with enhanced parallax and glow */}
       <div style={styles.starField}>
-        {STARS.map((s, i) => (
-          <span
-            key={i}
-            style={{
-              position: "absolute",
-              top: s.top,
-              left: s.left,
-              width: s.size,
-              height: s.size,
-              borderRadius: "50%",
-              background: "#5eead4",
-              opacity: s.opacity,
-              boxShadow: `0 0 ${s.size * 4}px rgba(94, 234, 212, ${s.opacity})`,
-            }}
-          />
-        ))}
+        {STARS.map((s, i) => {
+          const speed = s.speed || 0.04;
+          const moveX = mousePosition.x * speed * 80;
+          const moveY = mousePosition.y * speed * 80;
+          
+          return (
+            <span
+              key={i}
+              style={{
+                position: "absolute",
+                top: `calc(${s.top} + ${moveY}px)`,
+                left: `calc(${s.left} + ${moveX}px)`,
+                width: s.size,
+                height: s.size,
+                borderRadius: "50%",
+                background: `radial-gradient(circle, #7ef0e0, #5eead4)`,
+                opacity: Math.min(1, s.opacity + 0.2),
+                boxShadow: `0 0 ${s.size * 6}px rgba(94, 234, 212, ${Math.min(1, s.opacity * 1.5)}), 0 0 ${s.size * 12}px rgba(94, 234, 212, ${Math.min(1, s.opacity * 0.6)})`,
+                transition: "top 0.15s ease-out, left 0.15s ease-out, box-shadow 0.3s ease",
+                pointerEvents: "none",
+                animation: `pulse ${2 + i * 0.3}s ease-in-out infinite alternate`,
+              }}
+            />
+          );
+        })}
       </div>
+      
+      {/* Enhanced orbit arcs with parallax and glow */}
       <svg style={styles.arcField} viewBox="0 0 1700 950" preserveAspectRatio="none">
-        <circle cx="1850" cy="900" r="520" fill="none" stroke="rgba(52,211,153,0.14)" strokeWidth="1" />
-        <circle cx="1850" cy="900" r="680" fill="none" stroke="rgba(52,211,153,0.09)" strokeWidth="1" />
-        <circle cx="1850" cy="900" r="840" fill="none" stroke="rgba(52,211,153,0.06)" strokeWidth="1" />
+        <defs>
+          <radialGradient id="glow1" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="rgba(52,211,153,0.4)" stopOpacity="1"/>
+            <stop offset="100%" stopColor="rgba(52,211,153,0)" stopOpacity="0"/>
+          </radialGradient>
+          <radialGradient id="glow2" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="rgba(52,211,153,0.25)" stopOpacity="1"/>
+            <stop offset="100%" stopColor="rgba(52,211,153,0)" stopOpacity="0"/>
+          </radialGradient>
+          <radialGradient id="glow3" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="rgba(52,211,153,0.15)" stopOpacity="1"/>
+            <stop offset="100%" stopColor="rgba(52,211,153,0)" stopOpacity="0"/>
+          </radialGradient>
+        </defs>
+        
+        {/* Glow effects behind arcs */}
+        <circle 
+          cx={1850 + mousePosition.x * 30} 
+          cy={900 + mousePosition.y * 20} 
+          r="540" 
+          fill="url(#glow1)"
+          opacity="0.6"
+          style={styles.arcTransition}
+        />
+        <circle 
+          cx={1850 + mousePosition.x * 50} 
+          cy={900 + mousePosition.y * 30} 
+          r="700" 
+          fill="url(#glow2)"
+          opacity="0.4"
+          style={styles.arcTransition}
+        />
+        <circle 
+          cx={1850 + mousePosition.x * 70} 
+          cy={900 + mousePosition.y * 40} 
+          r="860" 
+          fill="url(#glow3)"
+          opacity="0.3"
+          style={styles.arcTransition}
+        />
+        
+        {/* Arc lines with enhanced glow */}
+        <circle 
+          cx={1850 + mousePosition.x * 30} 
+          cy={900 + mousePosition.y * 20} 
+          r="520" 
+          fill="none" 
+          stroke="rgba(52,211,153,0.25)" 
+          strokeWidth="1.5"
+          style={{
+            ...styles.arcTransition,
+            filter: "drop-shadow(0 0 20px rgba(52,211,153,0.15))"
+          }}
+        />
+        <circle 
+          cx={1850 + mousePosition.x * 50} 
+          cy={900 + mousePosition.y * 30} 
+          r="680" 
+          fill="none" 
+          stroke="rgba(52,211,153,0.15)" 
+          strokeWidth="1"
+          style={{
+            ...styles.arcTransition,
+            filter: "drop-shadow(0 0 30px rgba(52,211,153,0.1))"
+          }}
+        />
+        <circle 
+          cx={1850 + mousePosition.x * 70} 
+          cy={900 + mousePosition.y * 40} 
+          r="840" 
+          fill="none" 
+          stroke="rgba(52,211,153,0.08)" 
+          strokeWidth="1"
+          style={{
+            ...styles.arcTransition,
+            filter: "drop-shadow(0 0 40px rgba(52,211,153,0.08))"
+          }}
+        />
       </svg>
 
       <div style={styles.container}>
@@ -325,7 +508,85 @@ export default function Rank() {
               </button>
             )}
           </div>
+{isAdmin && (
+  <div style={styles.filterCard}>
+    <select
+      style={styles.filterInput}
+      value={filters.department_id}
+      onChange={(e) => {
+        const departmentId = e.target.value;
 
+        setFilters({
+          ...filters,
+          department_id: departmentId,
+          programme_id: "",
+        });
+
+        loadFilterProgrammes(departmentId);
+      }}
+    >
+      <option value="">All Departments</option>
+
+      {departments.map((department) => (
+        <option
+          key={department.dep_id}
+          value={department.dep_id}
+        >
+          {department.department_name}
+        </option>
+      ))}
+    </select>
+
+    <select
+      style={styles.filterInput}
+      value={filters.programme_id}
+      onChange={(e) =>
+        setFilters({
+          ...filters,
+          programme_id: e.target.value,
+        })
+      }
+    >
+      <option value="">All Programmes</option>
+
+      {filterProgrammes.map((programme) => (
+        <option
+          key={programme.programme_id}
+          value={programme.programme_id}
+        >
+          {programme.programme_name}
+        </option>
+      ))}
+    </select>
+
+    <input
+      type="number"
+      placeholder="Admission Year"
+      style={styles.filterInput}
+      value={filters.year_of_admn}
+      onChange={(e) =>
+        setFilters({
+          ...filters,
+          year_of_admn: e.target.value,
+        })
+      }
+    />
+
+    <button
+      style={styles.filterButton}
+      onClick={applyFilters}
+    >
+      Apply Filters
+    </button>
+
+    <button
+      style={styles.resetButton}
+      onClick={resetFilters}
+    >
+      Reset
+    </button>
+  </div>
+)}
           {errorMessage && (
             <div style={styles.errorAlert}>
               <span style={styles.errorIcon}>⚠️</span>
@@ -585,17 +846,17 @@ export default function Rank() {
   );
 }
 
-/* ---------- decorative star positions ---------- */
+/* ---------- decorative star positions with enhanced speed ---------- */
 const STARS = [
-  { top: "9%", left: "73%", size: 2, opacity: 0.55 },
-  { top: "16%", left: "92%", size: 2, opacity: 0.5 },
-  { top: "28%", left: "67%", size: 2.5, opacity: 0.65 },
-  { top: "35%", left: "88%", size: 2, opacity: 0.45 },
-  { top: "44%", left: "57%", size: 2, opacity: 0.5 },
-  { top: "54%", left: "73%", size: 2.5, opacity: 0.65 },
-  { top: "64%", left: "55%", size: 2, opacity: 0.45 },
-  { top: "73%", left: "88%", size: 2, opacity: 0.55 },
-  { top: "81%", left: "64%", size: 2, opacity: 0.5 },
+  { top: "9%", left: "73%", size: 3, opacity: 0.65, speed: 0.03 },
+  { top: "16%", left: "92%", size: 2.5, opacity: 0.6, speed: 0.05 },
+  { top: "28%", left: "67%", size: 3.5, opacity: 0.75, speed: 0.04 },
+  { top: "35%", left: "88%", size: 2.5, opacity: 0.55, speed: 0.07 },
+  { top: "44%", left: "57%", size: 2, opacity: 0.6, speed: 0.02 },
+  { top: "54%", left: "73%", size: 3.5, opacity: 0.75, speed: 0.06 },
+  { top: "64%", left: "55%", size: 2.5, opacity: 0.55, speed: 0.035 },
+  { top: "73%", left: "88%", size: 3, opacity: 0.65, speed: 0.05 },
+  { top: "81%", left: "64%", size: 2.5, opacity: 0.6, speed: 0.04 },
 ];
 
 const styles = {
@@ -619,6 +880,9 @@ const styles = {
     height: "100%",
     pointerEvents: "none",
     zIndex: 0,
+  },
+  arcTransition: {
+    transition: "cx 0.15s ease-out, cy 0.15s ease-out, opacity 0.3s ease",
   },
   container: {
     maxWidth: "1400px",
@@ -1134,6 +1398,46 @@ const styles = {
     fontSize: "14px",
     margin: 0,
   },
+  filterCard: {
+  display: "flex",
+  flexWrap: "wrap",
+  gap: "12px",
+  marginBottom: "24px",
+  padding: "18px",
+  background: "rgba(255,255,255,0.02)",
+  border: "1px solid rgba(52,211,153,0.08)",
+  borderRadius: "12px",
+},
+
+filterInput: {
+  minWidth: "220px",
+  padding: "10px 14px",
+  background: "rgba(255,255,255,0.05)",
+  border: "1px solid rgba(52,211,153,0.12)",
+  borderRadius: "8px",
+  color: "#ffffff",
+  fontSize: "14px",
+  outline: "none",
+},
+
+filterButton: {
+  padding: "10px 18px",
+  background: "#10b981",
+  border: "none",
+  borderRadius: "8px",
+  color: "#fff",
+  cursor: "pointer",
+  fontWeight: "600",
+},
+
+resetButton: {
+  padding: "10px 18px",
+  background: "transparent",
+  border: "1px solid rgba(255,255,255,0.15)",
+  borderRadius: "8px",
+  color: "#ffffff",
+  cursor: "pointer",
+},
 };
 
 // Add CSS animations and hover effects
@@ -1142,6 +1446,11 @@ styleSheet.textContent = `
   @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
+  }
+
+  @keyframes pulse {
+    0% { opacity: 0.6; transform: scale(0.95); }
+    100% { opacity: 1; transform: scale(1.05); }
   }
 
   .logo-home:hover {
@@ -1208,6 +1517,23 @@ styleSheet.textContent = `
     color: #34d399;
   }
 
+  .filter-button:hover {
+    background: #059669;
+    transform: translateY(-1px);
+  }
+
+  .reset-button:hover {
+    background: rgba(255,255,255,0.05);
+    border-color: rgba(255,255,255,0.25);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .star-field span, .arc-field circle { 
+      transition: none !important; 
+      animation: none !important;
+    }
+  }
+
   @media (max-width: 860px) {
     .container { padding: 16px !important; }
     .content-wrapper { padding: 20px !important; }
@@ -1220,6 +1546,8 @@ styleSheet.textContent = `
     .header-left { flex-wrap: wrap !important; }
     .title { font-size: 22px !important; }
     .add-button { padding: 10px 18px !important; font-size: 13px !important; justify-content: center !important; }
+    .filter-card { flex-direction: column !important; }
+    .filter-input { min-width: 100% !important; }
     .result-header, .result-row { grid-template-columns: minmax(180px, 1fr) 80px 80px 70px 90px 80px !important; gap: 8px !important; font-size: 12px !important; }
     .student-name-text { font-size: 12px !important; }
     .student-photo, .photo-placeholder { width: 32px !important; height: 32px !important; font-size: 12px !important; }

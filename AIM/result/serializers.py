@@ -108,3 +108,40 @@ class RankUpdateSerializer(serializers.Serializer):
             raise serializers.ValidationError("Duplicate students are not allowed.")
 
         return value
+class StudentResultSerializer(serializers.ModelSerializer):
+    student_id = serializers.IntegerField(source="student.stud_id")
+    student_name = serializers.CharField(source="student.name")
+    admn_no = serializers.CharField(source="student.admn_no")
+    roll_no = serializers.CharField(
+    source="student.roll_no",
+    allow_null=True
+)
+
+    programme_name = serializers.CharField(
+        source="student.programme.pgm_name"
+    )
+
+    department_name = serializers.CharField(
+        source="student.programme.department.department"
+    )
+
+    year_of_admn = serializers.IntegerField(
+        source="student.year_of_admn"
+    )
+
+    class Meta:
+        model = Result
+        fields = [
+            "student_id",
+            "admn_no",
+            "roll_no",
+            "student_name",
+            "department_name",
+            "programme_name",
+            "year_of_admn",
+            "ogpa",
+            "marks",
+            "status",
+            "rank",
+            "result_year",
+        ]

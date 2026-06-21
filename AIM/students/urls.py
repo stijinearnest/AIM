@@ -5,6 +5,7 @@ from .views import (
     GetProgrammesByDepartment,
     GetStudent,
     GetStudentsByAdmissionYearAndProgramme,
+    GetAllDepartments,
 )
 
 urlpatterns = [
@@ -15,6 +16,7 @@ urlpatterns = [
         name="get-programmes-by-department",
     ),
     path("department/", GetDepartment.as_view(), name="get-department"),
+    path("departments/", GetAllDepartments.as_view()),
     path("student/", GetStudent.as_view(), name="get-student"),
     path(
         "by-programme/",

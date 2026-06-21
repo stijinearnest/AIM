@@ -1,3 +1,7 @@
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from .models import Department
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -78,6 +82,23 @@ class GetDepartment(APIView):
             status=status.HTTP_200_OK,
         )
 
+class GetAllDepartments(APIView):
+
+    def get(self, request):
+        departments = Department.objects.all().order_by("department")
+
+        return Response(
+            {
+                "departments": [
+                    {
+                        "dep_id": dept.dep_id,
+                        "department_name": dept.department,
+                    }
+                    for dept in departments
+                ]
+            },
+            status=status.HTTP_200_OK,
+        )
 
 class GetProgrammesByDepartment(APIView):
     # permission_classes = [IsAuthenticated]
