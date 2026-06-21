@@ -392,7 +392,7 @@ const resetFilters = () => {
         })}
       </div>
       
-      {/* Enhanced orbit arcs with parallax and glow */}
+      {/* Enhanced orbit arcs with static glow */}
       <svg style={styles.arcField} viewBox="0 0 1700 950" preserveAspectRatio="none">
         <defs>
           <radialGradient id="glow1" cx="50%" cy="50%" r="50%">
@@ -411,24 +411,24 @@ const resetFilters = () => {
         
         {/* Glow effects behind arcs */}
         <circle 
-          cx={1850 + mousePosition.x * 30} 
-          cy={900 + mousePosition.y * 20} 
+          cx="1850"
+          cy="900"
           r="540" 
           fill="url(#glow1)"
           opacity="0.6"
           style={styles.arcTransition}
         />
         <circle 
-          cx={1850 + mousePosition.x * 50} 
-          cy={900 + mousePosition.y * 30} 
+          cx="1850"
+          cy="900"
           r="700" 
           fill="url(#glow2)"
           opacity="0.4"
           style={styles.arcTransition}
         />
         <circle 
-          cx={1850 + mousePosition.x * 70} 
-          cy={900 + mousePosition.y * 40} 
+          cx="1850"
+          cy="900"
           r="860" 
           fill="url(#glow3)"
           opacity="0.3"
@@ -437,8 +437,8 @@ const resetFilters = () => {
         
         {/* Arc lines with enhanced glow */}
         <circle 
-          cx={1850 + mousePosition.x * 30} 
-          cy={900 + mousePosition.y * 20} 
+          cx="1850"
+          cy="900"
           r="520" 
           fill="none" 
           stroke="rgba(52,211,153,0.25)" 
@@ -449,8 +449,8 @@ const resetFilters = () => {
           }}
         />
         <circle 
-          cx={1850 + mousePosition.x * 50} 
-          cy={900 + mousePosition.y * 30} 
+          cx="1850"
+          cy="900"
           r="680" 
           fill="none" 
           stroke="rgba(52,211,153,0.15)" 
@@ -461,8 +461,8 @@ const resetFilters = () => {
           }}
         />
         <circle 
-          cx={1850 + mousePosition.x * 70} 
-          cy={900 + mousePosition.y * 40} 
+          cx="1850"
+          cy="900"
           r="840" 
           fill="none" 
           stroke="rgba(52,211,153,0.08)" 
@@ -928,7 +928,7 @@ const styles = {
     zIndex: 0,
   },
   arcTransition: {
-    transition: "cx 0.15s ease-out, cy 0.15s ease-out, opacity 0.3s ease",
+    transition: "opacity 0.3s ease",
   },
   container: {
     maxWidth: "1400px",

@@ -1,26 +1,60 @@
 import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { apiGet } from "../api/apiService";
+import { apiGet, apiPost } from "../api/apiService";
 import aimLogo from "../assets/aim-logo1.png";
+
+const getPhotoSrc = (photo) => {
+  if (!photo) return "";
+  const photoValue = String(photo);
+  const looksLikeImagePath = /\.(jpg|jpeg|png|gif|webp|svg)(\?.*)?$/i.test(photoValue);
+  if (
+    photoValue.startsWith("data:") ||
+    photoValue.startsWith("http") ||
+    photoValue.startsWith("blob:") ||
+    photoValue.startsWith("/") ||
+    looksLikeImagePath
+  ) {
+    return photoValue;
+  }
+  return `data:image/jpeg;base64,${photoValue}`;
+};
+
+const fileToBase64 = (file) =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
 
 export default function StudentResults() {
   const navigate = useNavigate();
   const username = localStorage.getItem("username") || "there";
   const department = localStorage.getItem("dep_name") || "Department";
+  const isAdmin = localStorage.getItem("is_admin") === "true";
+  const userDepartmentId = localStorage.getItem("department_id") || "";
   const [results, setResults] = useState([]);
   const [departments, setDepartments] = useState([]);
   const [programmes, setProgrammes] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [students, setStudents] = useState([]);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [showDropdown, setShowDropdown] = useState(false);
   const containerRef = useRef(null);
   const dropdownRef = useRef(null);
 
-  const [filters, setFilters] = useState({
-    department_id: "",
+  const [resultForm, setResultForm] = useState({
+    result_year: new Date().getFullYear(),
     programme_id: "",
     year_of_admn: "",
-    result_year: "",
+  });
+
+  const [filters, setFilters] = useState({
+    department_id: isAdmin ? "" : userDepartmentId,
+    programme_id: "",
+    year_of_admn: "",
   });
 
   useEffect(() => {
@@ -60,6 +94,11 @@ export default function StudentResults() {
     try {
       const response = await apiGet("/students/departments/");
       setDepartments(response.departments || []);
+      
+      // If not admin, auto-load programmes for their department
+      if (!isAdmin && userDepartmentId) {
+        loadProgrammes(userDepartmentId);
+      }
     } catch (err) {
       console.error(err);
     }
@@ -81,17 +120,16 @@ export default function StudentResults() {
       setLoading(true);
       const params = [];
 
-      if (filters.department_id)
-        params.push(`department_id=${filters.department_id}`);
+      // For non-admin users, always filter by their department
+      const deptId = isAdmin ? filters.department_id : userDepartmentId;
+      if (deptId)
+        params.push(`department_id=${deptId}`);
 
       if (filters.programme_id)
         params.push(`programme_id=${filters.programme_id}`);
 
       if (filters.year_of_admn)
         params.push(`year_of_admn=${filters.year_of_admn}`);
-
-      if (filters.result_year)
-        params.push(`result_year=${filters.result_year}`);
 
       const response = await apiGet(
         `/result/student-results/?${params.join("&")}`
@@ -107,13 +145,71 @@ export default function StudentResults() {
 
   const handleReset = () => {
     setFilters({
-      department_id: "",
+      department_id: isAdmin ? "" : userDepartmentId,
       programme_id: "",
       year_of_admn: "",
-      result_year: "",
     });
     setProgrammes([]);
     setResults([]);
+  };
+
+  const openAddResultModal = async () => {
+    await loadProgrammes(userDepartmentId);
+    setShowModal(true);
+  };
+
+  const loadStudents = async () => {
+    try {
+      const response = await apiGet(
+        `/students/by-programme/?year_of_admn=${resultForm.year_of_admn}&programme_id=${resultForm.programme_id}`
+      );
+
+      const studentsWithFields = response.students.map((student) => ({
+        ...student,
+        photo: student.photo || "",
+        rank: "",
+        ogpa: "",
+        marks: "",
+        status: "P",
+      }));
+
+      setStudents(studentsWithFields);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to load students");
+    }
+  };
+
+  const saveResults = async () => {
+    try {
+      setSaving(true);
+
+      const payload = {
+        result_year: Number(resultForm.result_year),
+        year_of_admn: Number(resultForm.year_of_admn),
+        programme_id: Number(resultForm.programme_id),
+        department_id: Number(userDepartmentId),
+        results: students.map((student) => ({
+          student_id: student.stud_id,
+          photo: student.photo || null,
+          rank: student.rank === "" ? null : Number(student.rank),
+          status: student.status || "P",
+          ogpa: student.ogpa === "" ? "0.00" : student.ogpa,
+          marks: student.marks === "" ? null : student.marks,
+        })),
+      };
+
+      await apiPost("/result/result/add/", payload);
+      alert("Results saved successfully");
+      setShowModal(false);
+      setStudents([]);
+      searchResults();
+    } catch (err) {
+      console.error(err);
+      alert("Failed to save results");
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -147,7 +243,7 @@ export default function StudentResults() {
         })}
       </div>
       
-      {/* Enhanced orbit arcs with parallax and glow */}
+      {/* Enhanced orbit arcs with static glow */}
       <svg style={styles.arcField} viewBox="0 0 1700 950" preserveAspectRatio="none">
         <defs>
           <radialGradient id="glow1" cx="50%" cy="50%" r="50%">
@@ -166,24 +262,24 @@ export default function StudentResults() {
         
         {/* Glow effects behind arcs */}
         <circle 
-          cx={1850 + mousePosition.x * 30} 
-          cy={900 + mousePosition.y * 20} 
+          cx="1850"
+          cy="900"
           r="540" 
           fill="url(#glow1)"
           opacity="0.6"
           style={styles.arcTransition}
         />
         <circle 
-          cx={1850 + mousePosition.x * 50} 
-          cy={900 + mousePosition.y * 30} 
+          cx="1850"
+          cy="900"
           r="700" 
           fill="url(#glow2)"
           opacity="0.4"
           style={styles.arcTransition}
         />
         <circle 
-          cx={1850 + mousePosition.x * 70} 
-          cy={900 + mousePosition.y * 40} 
+          cx="1850"
+          cy="900"
           r="860" 
           fill="url(#glow3)"
           opacity="0.3"
@@ -192,8 +288,8 @@ export default function StudentResults() {
         
         {/* Arc lines with enhanced glow */}
         <circle 
-          cx={1850 + mousePosition.x * 30} 
-          cy={900 + mousePosition.y * 20} 
+          cx="1850"
+          cy="900"
           r="520" 
           fill="none" 
           stroke="rgba(52,211,153,0.25)" 
@@ -204,8 +300,8 @@ export default function StudentResults() {
           }}
         />
         <circle 
-          cx={1850 + mousePosition.x * 50} 
-          cy={900 + mousePosition.y * 30} 
+          cx="1850"
+          cy="900"
           r="680" 
           fill="none" 
           stroke="rgba(52,211,153,0.15)" 
@@ -216,8 +312,8 @@ export default function StudentResults() {
           }}
         />
         <circle 
-          cx={1850 + mousePosition.x * 70} 
-          cy={900 + mousePosition.y * 40} 
+          cx="1850"
+          cy="900"
           r="840" 
           fill="none" 
           stroke="rgba(52,211,153,0.08)" 
@@ -292,9 +388,26 @@ export default function StudentResults() {
             <div style={styles.headerLeft}>
               <div style={styles.titleWrapper}>
                 <h2 style={styles.title}>📊 Student Results</h2>
-                <p style={styles.subtitle}>View and search student performance records</p>
+                <p style={styles.subtitle}>
+                  {isAdmin
+                    ? "View and search student performance records"
+                    : `Viewing student results for ${department}`}
+                </p>
               </div>
             </div>
+            {!isAdmin && (
+              <button
+                className="add-button"
+                style={styles.addButton}
+                onClick={openAddResultModal}
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <line x1="12" y1="5" x2="12" y2="19" strokeLinecap="round"/>
+                  <line x1="5" y1="12" x2="19" y2="12" strokeLinecap="round"/>
+                </svg>
+                Add Result
+              </button>
+            )}
           </div>
 
           {/* Filters Section */}
@@ -305,6 +418,7 @@ export default function StudentResults() {
                 <select
                   style={styles.filterSelect}
                   value={filters.department_id}
+                  disabled={!isAdmin}
                   onChange={(e) => {
                     const deptId = e.target.value;
                     setFilters({
@@ -315,12 +429,20 @@ export default function StudentResults() {
                     loadProgrammes(deptId);
                   }}
                 >
-                  <option value="">All Departments</option>
-                  {departments.map((dept) => (
-                    <option key={dept.dep_id} value={dept.dep_id}>
-                      {dept.department_name}
-                    </option>
-                  ))}
+                  {isAdmin ? (
+                    <>
+                      <option value="">All Departments</option>
+                      {departments.map((dept) => (
+                        <option key={dept.dep_id} value={dept.dep_id}>
+                          {dept.department_name}
+                        </option>
+                      ))}
+                    </>
+                  ) : (
+                    <>
+                      <option value={userDepartmentId}>{department}</option>
+                    </>
+                  )}
                 </select>
               </div>
 
@@ -356,22 +478,6 @@ export default function StudentResults() {
                     setFilters({
                       ...filters,
                       year_of_admn: e.target.value,
-                    })
-                  }
-                />
-              </div>
-
-              <div style={styles.filterGroup}>
-                <label style={styles.filterLabel}>Result Year</label>
-                <input
-                  type="number"
-                  style={styles.filterInput}
-                  placeholder="e.g. 2024"
-                  value={filters.result_year}
-                  onChange={(e) =>
-                    setFilters({
-                      ...filters,
-                      result_year: e.target.value,
                     })
                   }
                 />
@@ -461,6 +567,196 @@ export default function StudentResults() {
             )}
           </div>
         </div>
+
+        {showModal && (
+          <div style={styles.modalOverlay} onClick={() => setShowModal(false)}>
+            <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
+              <div style={styles.modalHeader}>
+                <h5 style={styles.modalTitle}>Add Results</h5>
+                <button
+                  className="modal-close"
+                  style={styles.modalClose}
+                  onClick={() => setShowModal(false)}
+                >
+                  x
+                </button>
+              </div>
+
+              <div style={styles.modalBody}>
+                <div style={styles.modalForm}>
+                  <div style={styles.formGroup}>
+                    <label style={styles.formLabel}>Result Year</label>
+                    <input style={styles.formInput} value={resultForm.result_year} readOnly />
+                  </div>
+
+                  <div style={styles.formGroup}>
+                    <label style={styles.formLabel}>Programme</label>
+                    <select
+                      style={styles.formSelect}
+                      value={resultForm.programme_id}
+                      onChange={(e) =>
+                        setResultForm({
+                          ...resultForm,
+                          programme_id: e.target.value,
+                        })
+                      }
+                    >
+                      <option value="">Select Programme</option>
+                      {programmes.map((programme) => (
+                        <option
+                          key={programme.programme_id}
+                          value={programme.programme_id}
+                          style={styles.formSelectOption}
+                        >
+                          {programme.programme_name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div style={styles.formGroup}>
+                    <label style={styles.formLabel}>Admission Year</label>
+                    <input
+                      type="number"
+                      style={styles.formInput}
+                      value={resultForm.year_of_admn}
+                      onChange={(e) =>
+                        setResultForm({
+                          ...resultForm,
+                          year_of_admn: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                </div>
+
+                <div style={styles.loadButtonRow}>
+                  <button
+                    className="load-button"
+                    style={styles.loadButton}
+                    onClick={loadStudents}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.66 0 3-4.03 3-9s-1.34-9-3-9m0 18c-1.66 0-3-4.03-3-9s1.34-9 3-9"/>
+                    </svg>
+                    Load Students
+                  </button>
+                </div>
+
+                {students.length > 0 && (
+                  <div style={styles.studentTableWrapper}>
+                    <div style={styles.resultHeader}>
+                      <span></span>
+                      <span>OGPA</span>
+                      <span>Marks</span>
+                      <span>Rank</span>
+                      <span>Status</span>
+                      <span>Photo</span>
+                    </div>
+
+                    <div style={styles.resultRows}>
+                      {students.map((student, index) => (
+                        <div key={student.stud_id} style={styles.resultRow}>
+                          <div style={styles.studentNameCell}>
+                            {student.photo ? (
+                              <img
+                                src={getPhotoSrc(student.photo)}
+                                alt={student.name}
+                                style={styles.studentPhoto}
+                              />
+                            ) : (
+                              <div style={styles.photoPlaceholder}>
+                                {student.name?.charAt(0)?.toUpperCase() || "?"}
+                              </div>
+                            )}
+                            <span style={styles.studentNameText}>{student.name}</span>
+                          </div>
+
+                          <input
+                            style={styles.modalInput}
+                            value={student.ogpa}
+                            onChange={(e) => {
+                              const updated = [...students];
+                              updated[index].ogpa = e.target.value;
+                              setStudents(updated);
+                            }}
+                          />
+
+                          <input
+                            style={styles.modalInput}
+                            value={student.marks}
+                            onChange={(e) => {
+                              const updated = [...students];
+                              updated[index].marks = e.target.value;
+                              setStudents(updated);
+                            }}
+                          />
+
+                          <input
+                            style={styles.modalInput}
+                            value={student.rank}
+                            onChange={(e) => {
+                              const updated = [...students];
+                              updated[index].rank = e.target.value;
+                              setStudents(updated);
+                            }}
+                          />
+
+                          <select
+                            style={styles.modalSelect}
+                            value={student.status}
+                            onChange={(e) => {
+                              const updated = [...students];
+                              updated[index].status = e.target.value;
+                              setStudents(updated);
+                            }}
+                          >
+                            <option value="P" style={styles.formSelectOption}>Pass</option>
+                            <option value="F" style={styles.formSelectOption}>Fail</option>
+                          </select>
+
+                          <label style={styles.photoUploadButton}>
+                            Add Photo
+                            <input
+                              type="file"
+                              accept="image/*"
+                              style={styles.photoInput}
+                              onChange={async (e) => {
+                                const file = e.target.files?.[0];
+                                if (!file) return;
+
+                                try {
+                                  const photo = await fileToBase64(file);
+                                  const updated = [...students];
+                                  updated[index].photo = photo;
+                                  setStudents(updated);
+                                } catch (err) {
+                                  console.error(err);
+                                  alert("Failed to read selected photo");
+                                }
+                              }}
+                            />
+                          </label>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div style={styles.modalFooter}>
+                      <button
+                        className="save-button"
+                        style={styles.saveButton}
+                        disabled={saving}
+                        onClick={saveResults}
+                      >
+                        {saving ? "Saving..." : "Save Results"}
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -502,7 +798,7 @@ const styles = {
     zIndex: 0,
   },
   arcTransition: {
-    transition: "cx 0.15s ease-out, cy 0.15s ease-out, opacity 0.3s ease",
+    transition: "opacity 0.3s ease",
   },
   container: {
     maxWidth: "1400px",
@@ -675,6 +971,24 @@ const styles = {
     margin: 0,
     fontWeight: "400",
     letterSpacing: "0.2px",
+  },
+  addButton: {
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+    padding: "11px 24px",
+    background: "linear-gradient(135deg, #10b981, #059669)",
+    border: "none",
+    borderRadius: "10px",
+    color: "#ffffff",
+    fontSize: "14px",
+    fontWeight: "600",
+    cursor: "pointer",
+    fontFamily: "inherit",
+    transition: "all 0.3s ease",
+    boxShadow: "0 4px 16px rgba(16, 185, 129, 0.25)",
+    whiteSpace: "nowrap",
+    flexShrink: 0,
   },
   filtersCard: {
     background: "rgba(255,255,255,0.02)",
@@ -896,6 +1210,272 @@ const styles = {
     fontSize: "13px",
     margin: 0,
   },
+  modalOverlay: {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    background: "rgba(0,0,0,0.7)",
+    backdropFilter: "blur(4px)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 1000,
+    padding: "20px",
+  },
+  modal: {
+    background: "#0a140e",
+    borderRadius: "20px",
+    maxWidth: "1200px",
+    width: "100%",
+    maxHeight: "90vh",
+    display: "flex",
+    flexDirection: "column",
+    border: "1px solid rgba(52, 211, 153, 0.08)",
+    boxShadow: "0 24px 64px rgba(0,0,0,0.6), 0 0 40px rgba(52, 211, 153, 0.02)",
+  },
+  modalHeader: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: "24px 28px",
+    borderBottom: "1px solid rgba(52, 211, 153, 0.06)",
+  },
+  modalTitle: {
+    color: "#ffffff",
+    fontSize: "20px",
+    fontWeight: "600",
+    margin: 0,
+  },
+  modalClose: {
+    background: "rgba(255,255,255,0.03)",
+    border: "none",
+    borderRadius: "8px",
+    color: "rgba(255,255,255,0.5)",
+    width: "36px",
+    height: "36px",
+    fontSize: "18px",
+    cursor: "pointer",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    transition: "all 0.2s ease",
+  },
+  modalBody: {
+    padding: "28px",
+    overflowY: "auto",
+  },
+  modalForm: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+    gap: "16px",
+    marginBottom: "20px",
+  },
+  formGroup: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "6px",
+  },
+  formLabel: {
+    color: "rgba(255,255,255,0.6)",
+    fontSize: "13px",
+    fontWeight: "500",
+  },
+  formInput: {
+    padding: "10px 14px",
+    background: "rgba(255,255,255,0.03)",
+    border: "1px solid rgba(52, 211, 153, 0.08)",
+    borderRadius: "8px",
+    color: "#ffffff",
+    fontSize: "14px",
+    outline: "none",
+    fontFamily: "inherit",
+  },
+  formSelect: {
+    padding: "10px 14px",
+    background: "rgba(255,255,255,0.05)",
+    border: "1px solid rgba(52, 211, 153, 0.12)",
+    borderRadius: "8px",
+    color: "#ffffff",
+    fontSize: "14px",
+    outline: "none",
+    fontFamily: "inherit",
+    cursor: "pointer",
+    appearance: "none",
+    WebkitAppearance: "none",
+    MozAppearance: "none",
+    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2334d399' d='M6 8L1 3h10z'/%3E%3C/svg%3E")`,
+    backgroundRepeat: "no-repeat",
+    backgroundPosition: "right 12px center",
+    paddingRight: "36px",
+  },
+  formSelectOption: {
+    background: "#0a140e",
+    color: "#ffffff",
+  },
+  loadButtonRow: {
+    display: "flex",
+    justifyContent: "flex-end",
+    marginBottom: "20px",
+  },
+  loadButton: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "8px",
+    padding: "10px 20px",
+    background: "rgba(52, 211, 153, 0.08)",
+    border: "1px solid rgba(52, 211, 153, 0.12)",
+    borderRadius: "8px",
+    color: "#34d399",
+    fontSize: "14px",
+    fontWeight: "500",
+    cursor: "pointer",
+    fontFamily: "inherit",
+    transition: "all 0.2s ease",
+  },
+  studentTableWrapper: {
+    marginTop: "8px",
+    border: "1px solid rgba(52, 211, 153, 0.06)",
+    borderRadius: "10px",
+    overflow: "hidden",
+  },
+  resultHeader: {
+    display: "grid",
+    gridTemplateColumns: "minmax(260px, 1fr) 110px 110px 90px 120px 100px",
+    gap: "12px",
+    alignItems: "center",
+    padding: "12px",
+    position: "sticky",
+    top: 0,
+    zIndex: 3,
+    background: "#0a140e",
+    borderBottom: "1px solid rgba(52, 211, 153, 0.08)",
+    color: "rgba(255,255,255,0.4)",
+    fontSize: "11px",
+    fontWeight: "500",
+    textTransform: "uppercase",
+    letterSpacing: "0.5px",
+  },
+  resultRows: {
+    maxHeight: "420px",
+    overflowY: "auto",
+  },
+  resultRow: {
+    display: "grid",
+    gridTemplateColumns: "minmax(260px, 1fr) 110px 110px 90px 120px 100px",
+    gap: "12px",
+    alignItems: "center",
+    padding: "10px 12px",
+    borderBottom: "1px solid rgba(52, 211, 153, 0.04)",
+  },
+  studentNameCell: {
+    display: "flex",
+    alignItems: "center",
+    gap: "10px",
+    minWidth: 0,
+    overflowX: "auto",
+    paddingBottom: "2px",
+  },
+  studentNameText: {
+    color: "rgba(255,255,255,0.82)",
+    fontSize: "13px",
+    whiteSpace: "nowrap",
+  },
+  studentPhoto: {
+    width: "42px",
+    height: "42px",
+    borderRadius: "8px",
+    objectFit: "cover",
+    border: "1px solid rgba(52, 211, 153, 0.14)",
+    background: "rgba(255,255,255,0.03)",
+    flexShrink: 0,
+  },
+  photoPlaceholder: {
+    width: "42px",
+    height: "42px",
+    borderRadius: "8px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    background: "rgba(52, 211, 153, 0.08)",
+    border: "1px solid rgba(52, 211, 153, 0.14)",
+    color: "#34d399",
+    fontSize: "15px",
+    fontWeight: "600",
+    flexShrink: 0,
+  },
+  photoUploadButton: {
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    justifySelf: "start",
+    minHeight: "30px",
+    padding: "5px 8px",
+    background: "rgba(52, 211, 153, 0.08)",
+    border: "1px solid rgba(52, 211, 153, 0.12)",
+    borderRadius: "6px",
+    color: "#34d399",
+    fontSize: "11px",
+    fontWeight: "500",
+    cursor: "pointer",
+    whiteSpace: "nowrap",
+  },
+  photoInput: {
+    display: "none",
+  },
+  modalInput: {
+    width: "100%",
+    boxSizing: "border-box",
+    padding: "8px 10px",
+    background: "rgba(255,255,255,0.03)",
+    border: "1px solid rgba(52, 211, 153, 0.06)",
+    borderRadius: "6px",
+    color: "#ffffff",
+    fontSize: "13px",
+    outline: "none",
+    fontFamily: "inherit",
+  },
+  modalSelect: {
+    width: "100%",
+    boxSizing: "border-box",
+    padding: "8px 10px",
+    background: "rgba(255,255,255,0.05)",
+    border: "1px solid rgba(52, 211, 153, 0.1)",
+    borderRadius: "6px",
+    color: "#ffffff",
+    fontSize: "13px",
+    outline: "none",
+    fontFamily: "inherit",
+    cursor: "pointer",
+    appearance: "none",
+    WebkitAppearance: "none",
+    MozAppearance: "none",
+    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpath fill='%2334d399' d='M5 7L1 3h8z'/%3E%3C/svg%3E")`,
+    backgroundRepeat: "no-repeat",
+    backgroundPosition: "right 8px center",
+    paddingRight: "28px",
+  },
+  modalFooter: {
+    display: "flex",
+    justifyContent: "flex-end",
+    marginTop: "20px",
+    paddingTop: "20px",
+    borderTop: "1px solid rgba(52, 211, 153, 0.06)",
+  },
+  saveButton: {
+    padding: "12px 28px",
+    background: "linear-gradient(135deg, #10b981, #059669)",
+    border: "none",
+    borderRadius: "10px",
+    color: "#ffffff",
+    fontSize: "14px",
+    fontWeight: "600",
+    cursor: "pointer",
+    fontFamily: "inherit",
+    transition: "all 0.3s ease",
+    boxShadow: "0 4px 16px rgba(16, 185, 129, 0.25)",
+  },
 };
 
 // Add CSS animations and hover effects
@@ -963,6 +1543,12 @@ if (typeof document !== "undefined" && !document.getElementById("student-results
     select option:checked {
       background: rgba(52, 211, 153, 0.15);
       color: #34d399;
+    }
+
+    select:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+      background-color: rgba(255, 255, 255, 0.02);
     }
 
     @media (prefers-reduced-motion: reduce) {

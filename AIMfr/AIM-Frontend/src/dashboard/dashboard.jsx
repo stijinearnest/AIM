@@ -221,7 +221,7 @@ export default function Dashboard() {
         </div>
 
         {/* Navigation Cards - Square with title below icon */}
-        <nav className="card-row" style={isAdmin ? styles.adminCardRow : styles.cardRow}>
+        <nav className="card-row" style={styles.cardRow}>
           <button
             className="nav-card"
             style={styles.navCard}
@@ -266,23 +266,21 @@ export default function Dashboard() {
               <span style={styles.navCardLabel}>Register User</span>
             </button>
           )}
-          {isAdmin && (
-            <button
-              className="nav-card"
-              style={styles.navCard}
-              onClick={() => handleTabChange("student-results")}
-            >
-              <span style={styles.navCardIcon}>
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="2">
-                  <path d="M3 4h18v16H3z" />
-                  <path d="M7 8h10" />
-                  <path d="M7 12h10" />
-                  <path d="M7 16h6" />
-                </svg>
-              </span>
-              <span style={styles.navCardLabel}>Student Results</span>
-            </button>
-          )}
+          <button
+            className="nav-card"
+            style={styles.navCard}
+            onClick={() => handleTabChange("student-results")}
+          >
+            <span style={styles.navCardIcon}>
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="2">
+                <path d="M3 4h18v16H3z" />
+                <path d="M7 8h10" />
+                <path d="M7 12h10" />
+                <path d="M7 16h6" />
+              </svg>
+            </span>
+            <span style={styles.navCardLabel}>Student Results</span>
+          </button>
         </nav>
 
         {/* Content Area */}
@@ -476,17 +474,19 @@ const styles = {
   },
   cardRow: {
     display: "grid",
-    gridTemplateColumns: "repeat(2, 1fr)",
+    gridTemplateColumns: "repeat(4, minmax(100px, 1fr))",
+    justifyContent: "center",
     gap: "20px",
     marginBottom: "40px",
-    maxWidth: "500px",
+    maxWidth: "100%",
   },
   adminCardRow: {
     display: "grid",
-    gridTemplateColumns: "repeat(4, 1fr)",
+    gridTemplateColumns: "repeat(4, minmax(100px, 1fr))",
+    justifyContent: "center",
     gap: "20px",
     marginBottom: "40px",
-    maxWidth: "760px",
+    maxWidth: "100%",
   },
   navCard: {
     display: "flex",
@@ -494,9 +494,9 @@ const styles = {
     alignItems: "center",
     justifyContent: "center",
     gap: "12px",
-    padding: "32px 20px",
+    padding: "24px 16px",
     aspectRatio: "1 / 1",
-    width: "100%",
+    width: "80%",
     borderRadius: "16px",
     background: "rgba(8, 14, 11, 0.55)",
     border: "1px solid rgba(52, 211, 153, 0.12)",
@@ -508,8 +508,8 @@ const styles = {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    width: "56px",
-    height: "56px",
+    width: "48px",
+    height: "48px",
     borderRadius: "14px",
     background: "rgba(52, 211, 153, 0.08)",
     border: "1px solid rgba(52, 211, 153, 0.12)",
@@ -517,7 +517,7 @@ const styles = {
   },
   navCardLabel: {
     color: "rgba(255, 255, 255, 0.85)",
-    fontSize: "18px",
+    fontSize: "16px",
     fontWeight: "600",
     marginTop: "4px",
   },
