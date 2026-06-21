@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Rank from "../rank/rank";
 import Placement from "../placement/placement";
-import aimLogo from "../assets/aim-logo.png";
+import aimLogo from "../assets/aim-logo1.png";
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("rank");
@@ -16,7 +16,7 @@ export default function Dashboard() {
 
   return (
     <div style={styles.page}>
-      {/* ambient starfield + orbit arcs, pure CSS */}
+      {/* ambient starfield + orbit arcs */}
       <div style={styles.starField}>
         {STARS.map((s, i) => (
           <span
@@ -42,74 +42,65 @@ export default function Dashboard() {
       </svg>
 
       <div style={styles.container}>
-        <header style={styles.topBar}>
+        {/* Navbar with border and highlight */}
+        <header style={styles.navbar}>
           <img src={aimLogo} alt="AIM" style={styles.logoImg} />
 
-          <div style={styles.topActions}>
-            <button className="icon-btn" style={styles.iconBtn} aria-label="Notifications">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M13.73 21a2 2 0 0 1-3.46 0" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-              <span style={styles.notifDot} />
-            </button>
-
-            <button
-              className="signout-btn"
-              onClick={() => {
-                localStorage.clear();
-                navigate("/");
-              }}
-              style={styles.logoutBtn}
-            >
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" strokeLinecap="round" strokeLinejoin="round"/>
-                <polyline points="16 17 21 12 16 7" strokeLinecap="round" strokeLinejoin="round"/>
-                <line x1="21" y1="12" x2="9" y2="12" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-              Sign Out
-            </button>
-          </div>
+          <button
+            className="signout-btn"
+            onClick={() => {
+              localStorage.clear();
+              navigate("/");
+            }}
+            style={styles.logoutBtn}
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" strokeLinecap="round" strokeLinejoin="round"/>
+              <polyline points="16 17 21 12 16 7" strokeLinecap="round" strokeLinejoin="round"/>
+              <line x1="21" y1="12" x2="9" y2="12" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            Sign Out
+          </button>
         </header>
 
-      
+        {/* Welcome Section */}
+        <div style={styles.welcomeBlock}>
+          <p style={styles.welcomeEyebrow}>Welcome back,</p>
+          <h1 style={styles.welcomeName}>{username}</h1>
+          <p style={styles.welcomeSub}>Manage your AIM profile and track your progress</p>
+        </div>
+
+        {/* Navigation Cards - Square with title below icon */}
         <nav style={styles.cardRow}>
           <button
             className="nav-card"
-            style={{
-              ...styles.navCard,
-              ...(activeTab === "rank" ? styles.navCardActive : {}),
-            }}
+            style={styles.navCard}
             onClick={() => handleTabChange("rank")}
           >
             <span style={styles.navCardIcon}>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="2">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="2">
                 <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" strokeLinejoin="round"/>
               </svg>
             </span>
             <span style={styles.navCardLabel}>Rank</span>
-            {activeTab === "rank" && <span style={styles.activeGlow} />}
           </button>
 
           <button
             className="nav-card"
-            style={{
-              ...styles.navCard,
-              ...(activeTab === "placement" ? styles.navCardActive : {}),
-            }}
+            style={styles.navCard}
             onClick={() => handleTabChange("placement")}
           >
             <span style={styles.navCardIcon}>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="2">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="2">
                 <rect x="3" y="7" width="18" height="13" rx="2" strokeLinejoin="round"/>
                 <path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </span>
             <span style={styles.navCardLabel}>Placement</span>
-            {activeTab === "placement" && <span style={styles.activeGlow} />}
           </button>
         </nav>
 
+        {/* Content Area */}
         
       </div>
     </div>
@@ -154,57 +145,35 @@ const styles = {
   container: {
     maxWidth: "1400px",
     margin: "0 auto",
-    padding: "40px 48px",
+    padding: "32px 48px",
     position: "relative",
     zIndex: 2,
   },
-  topBar: {
+  navbar: {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: "56px",
+    padding: "16px 24px",
+    marginBottom: "48px",
+    background: "rgba(8, 14, 11, 0.6)",
+    backdropFilter: "blur(12px)",
+    border: "1px solid rgba(52, 211, 153, 0.12)",
+    borderRadius: "16px",
+    boxShadow: "0 4px 24px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(52, 211, 153, 0.05)",
+    transition: "all 0.3s ease",
   },
   logoImg: {
-    height: "44px",
+    height: "84px",
     width: "auto",
     display: "block",
-  },
-  topActions: {
-    display: "flex",
-    alignItems: "center",
-    gap: "12px",
-  },
-  iconBtn: {
-    position: "relative",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    width: "44px",
-    height: "44px",
-    background: "rgba(255, 255, 255, 0.02)",
-    border: "1px solid rgba(52, 211, 153, 0.18)",
-    borderRadius: "10px",
-    color: "rgba(255,255,255,0.85)",
-    cursor: "pointer",
-    transition: "all 0.25s ease",
-  },
-  notifDot: {
-    position: "absolute",
-    top: "9px",
-    right: "10px",
-    width: "7px",
-    height: "7px",
-    borderRadius: "50%",
-    background: "#34d399",
-    boxShadow: "0 0 6px 1px rgba(52,211,153,0.9)",
   },
   logoutBtn: {
     display: "flex",
     alignItems: "center",
     gap: "9px",
-    padding: "11px 20px",
-    background: "rgba(255, 255, 255, 0.02)",
-    border: "1px solid rgba(52, 211, 153, 0.18)",
+    padding: "10px 20px",
+    background: "rgba(255, 255, 255, 0.03)",
+    border: "1px solid rgba(52, 211, 153, 0.15)",
     borderRadius: "10px",
     color: "#34d399",
     fontSize: "14px",
@@ -236,54 +205,44 @@ const styles = {
     margin: 0,
   },
   cardRow: {
-    display: "flex",
+    display: "grid",
+    gridTemplateColumns: "repeat(2, 1fr)",
     gap: "20px",
     marginBottom: "40px",
-    flexWrap: "wrap",
+    maxWidth: "500px",
   },
   navCard: {
-    position: "relative",
     display: "flex",
+    flexDirection: "column",
     alignItems: "center",
-    gap: "16px",
-    padding: "20px 28px",
-    minWidth: "320px",
+    justifyContent: "center",
+    gap: "12px",
+    padding: "32px 20px",
+    aspectRatio: "1 / 1",
+    width: "100%",
     borderRadius: "16px",
     background: "rgba(8, 14, 11, 0.55)",
-    border: "1px solid rgba(52, 211, 153, 0.16)",
+    border: "1px solid rgba(52, 211, 153, 0.12)",
     cursor: "pointer",
-    transition: "all 0.25s ease",
     fontFamily: "inherit",
-  },
-  navCardActive: {
-    background: "rgba(10, 22, 17, 0.85)",
-    borderColor: "rgba(52, 211, 153, 0.45)",
+    transition: "all 0.3s ease",
   },
   navCardIcon: {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    width: "48px",
-    height: "48px",
-    borderRadius: "12px",
-    background: "rgba(52, 211, 153, 0.1)",
-    border: "1px solid rgba(52, 211, 153, 0.2)",
+    width: "56px",
+    height: "56px",
+    borderRadius: "14px",
+    background: "rgba(52, 211, 153, 0.08)",
+    border: "1px solid rgba(52, 211, 153, 0.12)",
     flexShrink: 0,
   },
   navCardLabel: {
-    color: "#ffffff",
+    color: "rgba(255, 255, 255, 0.85)",
     fontSize: "18px",
     fontWeight: "600",
-  },
-  activeGlow: {
-    position: "absolute",
-    bottom: "-10px",
-    left: "12%",
-    right: "12%",
-    height: "3px",
-    borderRadius: "2px",
-    background: "linear-gradient(90deg, transparent, #34d399, transparent)",
-    boxShadow: "0 0 14px 2px rgba(52,211,153,0.85)",
+    marginTop: "4px",
   },
   contentArea: {
     background: "rgba(8, 16, 13, 0.6)",
@@ -296,7 +255,7 @@ const styles = {
   },
 };
 
-/* hover + focus + responsive rules */
+/* Global styles injection */
 if (typeof document !== "undefined" && !document.getElementById("dashboard-style-tag")) {
   const styleSheet = document.createElement("style");
   styleSheet.id = "dashboard-style-tag";
@@ -305,27 +264,34 @@ if (typeof document !== "undefined" && !document.getElementById("dashboard-style
       background: rgba(52, 211, 153, 0.08);
       border-color: rgba(52, 211, 153, 0.4);
       transform: translateY(-1px);
+      box-shadow: 0 4px 16px rgba(52, 211, 153, 0.1);
     }
 
-    .icon-btn:hover {
-      background: rgba(52, 211, 153, 0.08);
-      border-color: rgba(52, 211, 153, 0.4);
+    .signout-btn:focus-visible {
+      outline: 2px solid #34d399;
+      outline-offset: 2px;
     }
 
+    /* Square card hover effect */
     .nav-card:hover {
-      border-color: rgba(52, 211, 153, 0.35);
-      transform: translateY(-2px);
+      background: rgba(52, 211, 153, 0.06);
+      border-color: rgba(52, 211, 153, 0.3);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 24px rgba(52, 211, 153, 0.08);
     }
 
-    .signout-btn:focus-visible,
-    .icon-btn:focus-visible,
+    .nav-card:active {
+      transform: scale(0.97);
+    }
+
     .nav-card:focus-visible {
       outline: 2px solid #34d399;
       outline-offset: 2px;
     }
 
     @media (prefers-reduced-motion: reduce) {
-      .signout-btn, .icon-btn, .nav-card { transition: none !important; }
+      .signout-btn, .nav-card { transition: none !important; }
+      .nav-card:hover { transform: none !important; }
     }
 
     @media (max-width: 860px) {
@@ -333,7 +299,46 @@ if (typeof document !== "undefined" && !document.getElementById("dashboard-style
     }
 
     @media (max-width: 700px) {
-      .nav-card { min-width: 100% !important; }
+      .navbar { 
+        padding: 12px 16px !important;
+        margin-bottom: 32px !important;
+      }
+      .logo-img { height: 48px !important; }
+      .logout-btn { 
+        padding: 8px 14px !important;
+        font-size: 13px !important;
+      }
+      .card-row { 
+        grid-template-columns: 1fr 1fr !important;
+        max-width: 100% !important;
+        gap: 16px !important;
+      }
+      .nav-card { 
+        padding: 24px 16px !important;
+        min-height: 140px !important;
+      }
+      .nav-card-icon { 
+        width: 48px !important;
+        height: 48px !important;
+      }
+      .nav-card-label {
+        font-size: 16px !important;
+      }
+      .welcome-name {
+        font-size: 32px !important;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .card-row { 
+        grid-template-columns: 1fr !important;
+        max-width: 280px !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+      }
+      .container {
+        padding: 16px !important;
+      }
     }
 
     /* Style child components that might be rendered inside */

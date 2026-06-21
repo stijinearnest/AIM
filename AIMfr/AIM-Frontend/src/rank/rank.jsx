@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { apiGet, apiPost } from "../api/apiService";
+import aimLogo from "../assets/aim-logo1.png";
 
 const getPhotoSrc = (photo) => {
   if (!photo) return "";
@@ -29,7 +30,6 @@ const fileToBase64 = (file) =>
 export default function Rank() {
   const navigate = useNavigate();
   const [ranks, setRanks] = useState([]);
-  const [currentSlide, setCurrentSlide] = useState(0);
   const [showModal, setShowModal] = useState(false);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -200,17 +200,6 @@ export default function Rank() {
     });
   }, [rankedStudents]);
 
-  useEffect(() => {
-    if (rankedStudents.length === 0) return undefined;
-
-    setCurrentSlide((slide) => slide % rankedStudents.length);
-    const intervalId = window.setInterval(() => {
-      setCurrentSlide((slide) => (slide + 1) % rankedStudents.length);
-    }, 3500);
-
-    return () => window.clearInterval(intervalId);
-  }, [rankedStudents.length]);
-
   if (loading) {
     return (
       <div style={styles.loadingContainer}>
@@ -220,375 +209,420 @@ export default function Rank() {
     );
   }
 
-  const activeRankHolder = rankedStudents[currentSlide] || null;
-  const activeSessionYear = Number(activeRankHolder?.year_of_admn)
-    ? Number(activeRankHolder.year_of_admn) + 3
-    : "";
-
   return (
-    <div style={styles.container}>
-      <div style={styles.header}>
-        <div style={styles.headerLeft}>
-          <button style={styles.backButton} onClick={() => navigate("/dashboard")}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-              <path d="M19 12H5" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M12 19l-7-7 7-7" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-            Back to Dashboard
-          </button>
-          <div style={styles.titleWrapper}>
-            <h2 style={styles.title}>🏆 Rank Holders</h2>
-            <p style={styles.subtitle}>Department rankings and performance</p>
-          </div>
-        </div>
-        <button style={styles.addButton} onClick={openAddResultModal}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <line x1="12" y1="5" x2="12" y2="19" strokeLinecap="round"/>
-            <line x1="5" y1="12" x2="19" y2="12" strokeLinecap="round"/>
-          </svg>
-          Add Result
-        </button>
+    <div style={styles.page}>
+      {/* Ambient starfield + orbit arcs */}
+      <div style={styles.starField}>
+        {STARS.map((s, i) => (
+          <span
+            key={i}
+            style={{
+              position: "absolute",
+              top: s.top,
+              left: s.left,
+              width: s.size,
+              height: s.size,
+              borderRadius: "50%",
+              background: "#5eead4",
+              opacity: s.opacity,
+              boxShadow: `0 0 ${s.size * 4}px rgba(94, 234, 212, ${s.opacity})`,
+            }}
+          />
+        ))}
       </div>
+      <svg style={styles.arcField} viewBox="0 0 1700 950" preserveAspectRatio="none">
+        <circle cx="1850" cy="900" r="520" fill="none" stroke="rgba(52,211,153,0.14)" strokeWidth="1" />
+        <circle cx="1850" cy="900" r="680" fill="none" stroke="rgba(52,211,153,0.09)" strokeWidth="1" />
+        <circle cx="1850" cy="900" r="840" fill="none" stroke="rgba(52,211,153,0.06)" strokeWidth="1" />
+      </svg>
 
-      {errorMessage && (
-        <div style={styles.errorAlert}>
-          <span style={styles.errorIcon}>⚠️</span>
-          {errorMessage}
-        </div>
-      )}
+      <div style={styles.container}>
+        {/* Navbar */}
+        <header style={styles.navbar}>
+          <img 
+            src={aimLogo} 
+            alt="AIM" 
+            style={styles.logoImg}
+            onClick={() => navigate("/dashboard")}
+            className="logo-home"
+          />
 
-      {activeRankHolder && (
-        <div style={styles.rankSlideshow} key={activeRankHolder.student_id}>
-          {activeSessionYear && (
-            <span style={styles.slideYearBackground}>{activeSessionYear}</span>
+          <div style={styles.navActions}>
+            <button
+              className="signout-btn"
+              onClick={() => {
+                localStorage.clear();
+                navigate("/");
+              }}
+              style={styles.logoutBtn}
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" strokeLinecap="round" strokeLinejoin="round"/>
+                <polyline points="16 17 21 12 16 7" strokeLinecap="round" strokeLinejoin="round"/>
+                <line x1="21" y1="12" x2="9" y2="12" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              Sign Out
+            </button>
+          </div>
+        </header>
+
+        {/* Main Content */}
+        <div style={styles.contentWrapper}>
+          <div style={styles.header}>
+            <div style={styles.headerLeft}>
+              <div style={styles.titleWrapper}>
+                <h2 style={styles.title}>🏆 Rank Holders</h2>
+                <p style={styles.subtitle}>Department rankings and performance</p>
+              </div>
+            </div>
+            <button style={styles.addButton} onClick={openAddResultModal}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <line x1="12" y1="5" x2="12" y2="19" strokeLinecap="round"/>
+                <line x1="5" y1="12" x2="19" y2="12" strokeLinecap="round"/>
+              </svg>
+              Add Result
+            </button>
+          </div>
+
+          {errorMessage && (
+            <div style={styles.errorAlert}>
+              <span style={styles.errorIcon}>⚠️</span>
+              {errorMessage}
+            </div>
           )}
 
-          <div style={styles.slidePhotoWrap}>
-            {activeRankHolder.photo ? (
-              <img
-                src={getPhotoSrc(activeRankHolder.photo)}
-                alt={activeRankHolder.student_name}
-                style={styles.slidePhoto}
-              />
-            ) : (
-              <div style={styles.slidePhotoPlaceholder}>
-                {activeRankHolder.student_name?.charAt(0)?.toUpperCase() || "?"}
+          <div style={styles.rankSections}>
+            {groupedRanks.map(([admissionYear, studentsInYear]) => (
+              <section key={admissionYear} style={styles.yearSection}>
+                <div style={styles.yearSectionHeader}>
+                  <div>
+                    <h5 style={styles.tableTitle}>Admission Year {admissionYear}</h5>
+                    <p style={styles.yearSectionSubtitle}>
+                      Session {Number(admissionYear) ? Number(admissionYear) + 3 : "-"}
+                    </p>
+                  </div>
+                  <span style={styles.tableBadge}>{studentsInYear.length} Students</span>
+                </div>
+
+                <div style={styles.tableWrapper}>
+                  <table style={styles.table}>
+                    <thead>
+                      <tr>
+                        <th style={styles.th}>Rank</th>
+                        <th style={styles.th}>Name</th>
+                        <th style={styles.th}>Admission No</th>
+                        <th style={styles.th}>Programme</th>
+                        <th style={styles.th}>OGPA</th>
+                        <th style={styles.th}>Marks</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {studentsInYear.map((student) => (
+                        <tr key={`${admissionYear}-${student.student_id}`} style={styles.tr}>
+                          <td style={styles.td}>
+                            <span style={styles.rankBadge}>#{student.rank || "-"}</span>
+                          </td>
+                          <td style={styles.td}>{student.student_name}</td>
+                          <td style={styles.td}>{student.admission_no || "-"}</td>
+                          <td style={styles.td}>{student.programme_name}</td>
+                          <td style={styles.td}>
+                            <span style={styles.ogpaBadge}>{student.ogpa || "N/A"}</span>
+                          </td>
+                          <td style={styles.td}>{student.marks || "N/A"}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </section>
+            ))}
+
+            {ranks.length === 0 && (
+              <div style={styles.emptyState}>
+                <span style={styles.emptyIcon}>📊</span>
+                <p style={styles.emptyText}>No rank holders found</p>
+                <p style={styles.emptySubtext}>Department ID: {localStorage.getItem("department_id")}</p>
               </div>
             )}
           </div>
-
-          <div style={styles.slideContent}>
-            <span style={styles.slideRankBadge}>Rank #{activeRankHolder.rank || "-"}</span>
-            <h3 style={styles.slideName}>{activeRankHolder.student_name}</h3>
-            <p style={styles.slideProgramme}>{activeRankHolder.programme_name || "Programme not available"}</p>
-
-            <div style={styles.slideStats}>
-              <div style={styles.slideStat}>
-                <span style={styles.slideStatLabel}>OGPA</span>
-                <strong style={styles.slideStatValue}>{activeRankHolder.ogpa || "N/A"}</strong>
-              </div>
-              <div style={styles.slideStat}>
-                <span style={styles.slideStatLabel}>Marks</span>
-                <strong style={styles.slideStatValue}>{activeRankHolder.marks || "N/A"}</strong>
-              </div>
-              <div style={styles.slideStat}>
-                <span style={styles.slideStatLabel}>Admission Year</span>
-                <strong style={styles.slideStatValue}>{activeRankHolder.year_of_admn || "-"}</strong>
-              </div>
-            </div>
-          </div>
-
-          {rankedStudents.length > 1 && (
-            <div style={styles.slideDots}>
-              {rankedStudents.map((student, index) => (
-                <button
-                  key={`${student.student_id}-${index}`}
-                  style={{
-                    ...styles.slideDot,
-                    ...(index === currentSlide ? styles.slideDotActive : {}),
-                  }}
-                  onClick={() => setCurrentSlide(index)}
-                  aria-label={`Show rank ${student.rank || index + 1}`}
-                />
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
-      <div style={styles.rankSections}>
-        {groupedRanks.map(([admissionYear, studentsInYear]) => (
-          <section key={admissionYear} style={styles.yearSection}>
-        <div style={styles.yearSectionHeader}>
-          <div>
-            <h5 style={styles.tableTitle}>Admission Year {admissionYear}</h5>
-            <p style={styles.yearSectionSubtitle}>
-              Session {Number(admissionYear) ? Number(admissionYear) + 3 : "-"}
-            </p>
-          </div>
-          <span style={styles.tableBadge}>{studentsInYear.length} Students</span>
         </div>
 
-        <div style={styles.tableWrapper}>
-          <table style={styles.table}>
-            <thead>
-              <tr>
-                <th style={styles.th}>Rank</th>
-                <th style={styles.th}>Name</th>
-                <th style={styles.th}>Admission No</th>
-                <th style={styles.th}>Programme</th>
-                <th style={styles.th}>OGPA</th>
-                <th style={styles.th}>Marks</th>
-              </tr>
-            </thead>
-            <tbody>
-              {studentsInYear.map((student) => (
-                <tr key={`${admissionYear}-${student.student_id}`} style={styles.tr}>
-                  <td style={styles.td}>
-                    <span style={styles.rankBadge}>#{student.rank || "-"}</span>
-                  </td>
-                  <td style={styles.td}>{student.student_name}</td>
-                  <td style={styles.td}>{student.admission_no || "-"}</td>
-                  <td style={styles.td}>{student.programme_name}</td>
-                  <td style={styles.td}>
-                    <span style={styles.ogpaBadge}>{student.ogpa || "N/A"}</span>
-                  </td>
-                  <td style={styles.td}>{student.marks || "N/A"}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        {/* Modal */}
+        {showModal && (
+          <div style={styles.modalOverlay} onClick={() => setShowModal(false)}>
+            <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
+              <div style={styles.modalHeader}>
+                <h5 style={styles.modalTitle}>Add Results</h5>
+                <button style={styles.modalClose} onClick={() => setShowModal(false)}>✕</button>
+              </div>
 
-          {ranks.length === 0 && (
-            <div style={styles.emptyState}>
-              <span style={styles.emptyIcon}>📊</span>
-              <p style={styles.emptyText}>No rank holders found</p>
-              <p style={styles.emptySubtext}>Department ID: {localStorage.getItem("department_id")}</p>
+              <div style={styles.modalBody}>
+                <div style={styles.modalForm}>
+                  <div style={styles.formGroup}>
+                    <label style={styles.formLabel}>Result Year</label>
+                    <input
+                      style={styles.formInput}
+                      value={resultForm.result_year}
+                      readOnly
+                    />
+                  </div>
+
+                  <div style={styles.formGroup}>
+                    <label style={styles.formLabel}>Programme</label>
+                    <select
+                      style={styles.formSelect}
+                      value={resultForm.programme_id}
+                      onChange={(e) =>
+                        setResultForm({
+                          ...resultForm,
+                          programme_id: e.target.value,
+                        })
+                      }
+                    >
+                      <option value="">Select Programme</option>
+                      {programmes.map((programme) => (
+                        <option
+                          key={programme.programme_id}
+                          value={programme.programme_id}
+                          style={styles.formSelectOption}
+                        >
+                          {programme.programme_name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div style={styles.formGroup}>
+                    <label style={styles.formLabel}>Admission Year</label>
+                    <input
+                      type="number"
+                      style={styles.formInput}
+                      value={resultForm.year_of_admn}
+                      onChange={(e) =>
+                        setResultForm({
+                          ...resultForm,
+                          year_of_admn: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                </div>
+
+                <div style={styles.loadButtonRow}>
+                  <button style={styles.loadButton} onClick={loadStudents}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.66 0 3-4.03 3-9s-1.34-9-3-9m0 18c-1.66 0-3-4.03-3-9s1.34-9 3-9"/>
+                    </svg>
+                    Load Students
+                  </button>
+                </div>
+
+                {students.length > 0 && (
+                  <div style={styles.studentTableWrapper}>
+                    <div style={styles.resultHeader}>
+                      <span></span>
+                      <span>OGPA</span>
+                      <span>Marks</span>
+                      <span>Rank</span>
+                      <span>Status</span>
+                      <span>Photo</span>
+                    </div>
+
+                    <div style={styles.resultRows}>
+                      {students.map((student, index) => (
+                        <div key={student.stud_id} style={styles.resultRow}>
+                          <div style={styles.studentNameCell}>
+                            {student.photo ? (
+                              <img
+                                src={getPhotoSrc(student.photo)}
+                                alt={student.name}
+                                style={styles.studentPhoto}
+                              />
+                            ) : (
+                              <div style={styles.photoPlaceholder}>
+                                {student.name?.charAt(0)?.toUpperCase() || "?"}
+                              </div>
+                            )}
+                            <span style={styles.studentNameText}>{student.name}</span>
+                          </div>
+
+                          <input
+                            style={styles.modalInput}
+                            value={student.ogpa}
+                            onChange={(e) => {
+                              const updated = [...students];
+                              updated[index].ogpa = e.target.value;
+                              setStudents(updated);
+                            }}
+                          />
+
+                          <input
+                            style={styles.modalInput}
+                            value={student.marks}
+                            onChange={(e) => {
+                              const updated = [...students];
+                              updated[index].marks = e.target.value;
+                              setStudents(updated);
+                            }}
+                          />
+
+                          <input
+                            style={styles.modalInput}
+                            value={student.rank}
+                            onChange={(e) => {
+                              const updated = [...students];
+                              updated[index].rank = e.target.value;
+                              setStudents(updated);
+                            }}
+                          />
+
+                          <select
+                            style={styles.modalSelect}
+                            value={student.status}
+                            onChange={(e) => {
+                              const updated = [...students];
+                              updated[index].status = e.target.value;
+                              setStudents(updated);
+                            }}
+                          >
+                            <option value="P" style={styles.formSelectOption}>Pass</option>
+                            <option value="F" style={styles.formSelectOption}>Fail</option>
+                          </select>
+
+                          <label style={styles.photoUploadButton}>
+                            Add Photo
+                            <input
+                              type="file"
+                              accept="image/*"
+                              style={styles.photoInput}
+                              onChange={async (e) => {
+                                const file = e.target.files?.[0];
+                                if (!file) return;
+
+                                try {
+                                  const photo = await fileToBase64(file);
+                                  const updated = [...students];
+                                  updated[index].photo = photo;
+                                  setStudents(updated);
+                                } catch (error) {
+                                  console.error(error);
+                                  alert("Failed to read selected photo");
+                                }
+                              }}
+                            />
+                          </label>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div style={styles.modalFooter}>
+                      <button
+                        style={styles.saveButton}
+                        disabled={saving}
+                        onClick={saveResults}
+                      >
+                        {saving ? "Saving..." : "Save Results"}
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
-          )}
-        </div>
-          </section>
-        ))}
-
-        {ranks.length === 0 && (
-          <div style={styles.emptyState}>
-            <span style={styles.emptyIcon}>No data</span>
-            <p style={styles.emptyText}>No rank holders found</p>
-            <p style={styles.emptySubtext}>Department ID: {localStorage.getItem("department_id")}</p>
           </div>
         )}
       </div>
-
-      {/* Modal */}
-      {showModal && (
-        <div style={styles.modalOverlay} onClick={() => setShowModal(false)}>
-          <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
-            <div style={styles.modalHeader}>
-              <h5 style={styles.modalTitle}>Add Results</h5>
-              <button style={styles.modalClose} onClick={() => setShowModal(false)}>✕</button>
-            </div>
-
-            <div style={styles.modalBody}>
-              <div style={styles.modalForm}>
-                <div style={styles.formGroup}>
-                  <label style={styles.formLabel}>Result Year</label>
-                  <input
-                    style={styles.formInput}
-                    value={resultForm.result_year}
-                    readOnly
-                  />
-                </div>
-
-                <div style={styles.formGroup}>
-                  <label style={styles.formLabel}>Programme</label>
-                  <select
-                    style={styles.formSelect}
-                    value={resultForm.programme_id}
-                    onChange={(e) =>
-                      setResultForm({
-                        ...resultForm,
-                        programme_id: e.target.value,
-                      })
-                    }
-                  >
-                    <option value="">Select Programme</option>
-                    {programmes.map((programme) => (
-                      <option
-                        key={programme.programme_id}
-                        value={programme.programme_id}
-                      >
-                        {programme.programme_name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div style={styles.formGroup}>
-                  <label style={styles.formLabel}>Admission Year</label>
-                  <input
-                    type="number"
-                    style={styles.formInput}
-                    value={resultForm.year_of_admn}
-                    onChange={(e) =>
-                      setResultForm({
-                        ...resultForm,
-                        year_of_admn: e.target.value,
-                      })
-                    }
-                  />
-                </div>
-              </div>
-
-              <div style={styles.loadButtonRow}>
-                <button style={styles.loadButton} onClick={loadStudents}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.66 0 3-4.03 3-9s-1.34-9-3-9m0 18c-1.66 0-3-4.03-3-9s1.34-9 3-9"/>
-                  </svg>
-                  Load Students
-                </button>
-              </div>
-
-              {students.length > 0 && (
-                <div style={styles.studentTableWrapper}>
-                  <div style={styles.resultHeader}>
-                    <span></span>
-                    <span>OGPA</span>
-                    <span>Marks</span>
-                    <span>Rank</span>
-                    <span>Status</span>
-                    <span>Photo</span>
-                  </div>
-
-                  <div style={styles.resultRows}>
-                    {students.map((student, index) => (
-                      <div key={student.stud_id} style={styles.resultRow}>
-                        <div style={styles.studentNameCell}>
-                          {student.photo ? (
-                            <img
-                              src={getPhotoSrc(student.photo)}
-                              alt={student.name}
-                              style={styles.studentPhoto}
-                            />
-                          ) : (
-                            <div style={styles.photoPlaceholder}>
-                              {student.name?.charAt(0)?.toUpperCase() || "?"}
-                            </div>
-                          )}
-                          <span style={styles.studentNameText}>{student.name}</span>
-                        </div>
-
-                        <input
-                          style={styles.modalInput}
-                          value={student.ogpa}
-                          onChange={(e) => {
-                            const updated = [...students];
-                            updated[index].ogpa = e.target.value;
-                            setStudents(updated);
-                          }}
-                        />
-
-                        <input
-                          style={styles.modalInput}
-                          value={student.marks}
-                          onChange={(e) => {
-                            const updated = [...students];
-                            updated[index].marks = e.target.value;
-                            setStudents(updated);
-                          }}
-                        />
-
-                        <input
-                          style={styles.modalInput}
-                          value={student.rank}
-                          onChange={(e) => {
-                            const updated = [...students];
-                            updated[index].rank = e.target.value;
-                            setStudents(updated);
-                          }}
-                        />
-
-                        <select
-                          style={styles.modalSelect}
-                          value={student.status}
-                          onChange={(e) => {
-                            const updated = [...students];
-                            updated[index].status = e.target.value;
-                            setStudents(updated);
-                          }}
-                        >
-                          <option value="P">Pass</option>
-                          <option value="F">Fail</option>
-                        </select>
-
-                        <label style={styles.photoUploadButton}>
-                          Add Photo
-                          <input
-                            type="file"
-                            accept="image/*"
-                            style={styles.photoInput}
-                            onChange={async (e) => {
-                              const file = e.target.files?.[0];
-                              if (!file) return;
-
-                              try {
-                                const photo = await fileToBase64(file);
-                                const updated = [...students];
-                                updated[index].photo = photo;
-                                setStudents(updated);
-                              } catch (error) {
-                                console.error(error);
-                                alert("Failed to read selected photo");
-                              }
-                            }}
-                          />
-                        </label>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div style={styles.modalFooter}>
-                    <button
-                      style={styles.saveButton}
-                      disabled={saving}
-                      onClick={saveResults}
-                    >
-                      {saving ? "Saving..." : "Save Results"}
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
 
+/* ---------- decorative star positions ---------- */
+const STARS = [
+  { top: "9%", left: "73%", size: 2, opacity: 0.55 },
+  { top: "16%", left: "92%", size: 2, opacity: 0.5 },
+  { top: "28%", left: "67%", size: 2.5, opacity: 0.65 },
+  { top: "35%", left: "88%", size: 2, opacity: 0.45 },
+  { top: "44%", left: "57%", size: 2, opacity: 0.5 },
+  { top: "54%", left: "73%", size: 2.5, opacity: 0.65 },
+  { top: "64%", left: "55%", size: 2, opacity: 0.45 },
+  { top: "73%", left: "88%", size: 2, opacity: 0.55 },
+  { top: "81%", left: "64%", size: 2, opacity: 0.5 },
+];
+
 const styles = {
+  page: {
+    minHeight: "100vh",
+    background: "#050907",
+    position: "relative",
+    overflow: "hidden",
+    fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+  },
+  starField: {
+    position: "absolute",
+    inset: 0,
+    pointerEvents: "none",
+    zIndex: 0,
+  },
+  arcField: {
+    position: "absolute",
+    inset: 0,
+    width: "100%",
+    height: "100%",
+    pointerEvents: "none",
+    zIndex: 0,
+  },
   container: {
-    color: "#ffffff",
+    maxWidth: "1400px",
+    margin: "0 auto",
+    padding: "32px 48px",
+    position: "relative",
+    zIndex: 2,
   },
-  loadingContainer: {
+  navbar: {
     display: "flex",
-    flexDirection: "column",
+    justifyContent: "space-between",
     alignItems: "center",
-    justifyContent: "center",
-    minHeight: "300px",
-    gap: "16px",
+    padding: "16px 24px",
+    marginBottom: "32px",
+    background: "rgba(8, 14, 11, 0.6)",
+    backdropFilter: "blur(12px)",
+    border: "1px solid rgba(52, 211, 153, 0.12)",
+    borderRadius: "16px",
+    boxShadow: "0 4px 24px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(52, 211, 153, 0.05)",
   },
-  loadingSpinner: {
-    width: "48px",
-    height: "48px",
-    border: "4px solid rgba(52, 211, 153, 0.08)",
-    borderTop: "4px solid #34d399",
-    borderRadius: "50%",
-    animation: "spin 1s linear infinite",
+  logoImg: {
+    height: "84px",
+    width: "auto",
+    display: "block",
+    cursor: "pointer",
+    transition: "all 0.25s ease",
   },
-  loadingText: {
-    color: "rgba(255,255,255,0.6)",
+  navActions: {
+    display: "flex",
+    alignItems: "center",
+    gap: "12px",
+  },
+  logoutBtn: {
+    display: "flex",
+    alignItems: "center",
+    gap: "9px",
+    padding: "10px 20px",
+    background: "rgba(255, 255, 255, 0.03)",
+    border: "1px solid rgba(52, 211, 153, 0.15)",
+    borderRadius: "10px",
+    color: "#34d399",
     fontSize: "14px",
-    margin: 0,
+    fontWeight: "500",
+    cursor: "pointer",
+    fontFamily: "inherit",
+    transition: "all 0.25s ease",
+  },
+  contentWrapper: {
+    background: "rgba(8, 16, 13, 0.6)",
+    backdropFilter: "blur(14px)",
+    borderRadius: "20px",
+    border: "1px solid rgba(52, 211, 153, 0.08)",
+    padding: "32px",
+    boxShadow: "0 8px 32px rgba(0, 0, 0, 0.35)",
   },
   header: {
     display: "flex",
@@ -610,24 +644,6 @@ const styles = {
     display: "flex",
     flexDirection: "column",
     gap: "2px",
-  },
-  backButton: {
-    display: "inline-flex",
-    alignItems: "center",
-    gap: "8px",
-    padding: "10px 18px",
-    background: "rgba(52, 211, 153, 0.08)",
-    border: "1px solid rgba(52, 211, 153, 0.15)",
-    borderRadius: "10px",
-    color: "#34d399",
-    fontSize: "13px",
-    fontWeight: "600",
-    cursor: "pointer",
-    fontFamily: "inherit",
-    transition: "all 0.25s ease",
-    width: "fit-content",
-    whiteSpace: "nowrap",
-    flexShrink: 0,
   },
   title: {
     color: "#ffffff",
@@ -677,133 +693,6 @@ const styles = {
   errorIcon: {
     fontSize: "18px",
   },
-  rankSlideshow: {
-    position: "relative",
-    display: "grid",
-    gridTemplateColumns: "220px 1fr",
-    alignItems: "center",
-    gap: "28px",
-    minHeight: "280px",
-    padding: "28px",
-    marginBottom: "32px",
-    background: "linear-gradient(135deg, rgba(52, 211, 153, 0.09), rgba(255,255,255,0.025))",
-    border: "1px solid rgba(52, 211, 153, 0.09)",
-    borderRadius: "18px",
-    overflow: "hidden",
-    animation: "slideInFromLeft 0.6s ease-out",
-  },
-  slideYearBackground: {
-    position: "absolute",
-    right: "28px",
-    bottom: "-24px",
-    color: "rgba(255,255,255,0.045)",
-    fontSize: "140px",
-    fontWeight: "800",
-    lineHeight: 1,
-    pointerEvents: "none",
-  },
-  slidePhotoWrap: {
-    position: "relative",
-    zIndex: 1,
-    width: "220px",
-    height: "220px",
-    borderRadius: "18px",
-    overflow: "hidden",
-    background: "rgba(255,255,255,0.04)",
-    border: "1px solid rgba(52, 211, 153, 0.12)",
-  },
-  slidePhoto: {
-    width: "100%",
-    height: "100%",
-    objectFit: "cover",
-  },
-  slidePhotoPlaceholder: {
-    width: "100%",
-    height: "100%",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    color: "#34d399",
-    fontSize: "64px",
-    fontWeight: "700",
-    background: "rgba(52, 211, 153, 0.08)",
-  },
-  slideContent: {
-    position: "relative",
-    zIndex: 1,
-    display: "flex",
-    flexDirection: "column",
-    gap: "10px",
-  },
-  slideRankBadge: {
-    width: "fit-content",
-    padding: "6px 12px",
-    background: "rgba(52, 211, 153, 0.12)",
-    border: "1px solid rgba(52, 211, 153, 0.16)",
-    borderRadius: "999px",
-    color: "#34d399",
-    fontSize: "13px",
-    fontWeight: "700",
-  },
-  slideName: {
-    color: "#ffffff",
-    fontSize: "34px",
-    lineHeight: 1.1,
-    fontWeight: "700",
-    margin: 0,
-  },
-  slideProgramme: {
-    color: "rgba(255,255,255,0.58)",
-    fontSize: "15px",
-    margin: 0,
-  },
-  slideStats: {
-    display: "grid",
-    gridTemplateColumns: "repeat(3, minmax(110px, 1fr))",
-    gap: "12px",
-    marginTop: "10px",
-    maxWidth: "560px",
-  },
-  slideStat: {
-    padding: "12px",
-    background: "rgba(0,0,0,0.16)",
-    border: "1px solid rgba(52, 211, 153, 0.08)",
-    borderRadius: "10px",
-  },
-  slideStatLabel: {
-    display: "block",
-    color: "rgba(255,255,255,0.42)",
-    fontSize: "11px",
-    textTransform: "uppercase",
-    marginBottom: "4px",
-  },
-  slideStatValue: {
-    color: "#ffffff",
-    fontSize: "18px",
-  },
-  slideDots: {
-    position: "absolute",
-    left: "50%",
-    bottom: "16px",
-    transform: "translateX(-50%)",
-    display: "flex",
-    gap: "7px",
-    zIndex: 2,
-  },
-  slideDot: {
-    width: "8px",
-    height: "8px",
-    padding: 0,
-    border: "none",
-    borderRadius: "50%",
-    background: "rgba(255,255,255,0.24)",
-    cursor: "pointer",
-  },
-  slideDotActive: {
-    width: "22px",
-    borderRadius: "999px",
-    background: "#34d399",
-  },
   rankSections: {
     display: "flex",
     flexDirection: "column",
@@ -827,19 +716,6 @@ const styles = {
     color: "rgba(255,255,255,0.36)",
     fontSize: "12px",
     margin: "4px 0 0",
-  },
-  tableCard: {
-    background: "rgba(255,255,255,0.02)",
-    border: "1px solid rgba(52, 211, 153, 0.06)",
-    borderRadius: "16px",
-    overflow: "hidden",
-  },
-  tableHeader: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: "20px 24px",
-    borderBottom: "1px solid rgba(52, 211, 153, 0.06)",
   },
   tableTitle: {
     color: "#ffffff",
@@ -1004,14 +880,25 @@ const styles = {
   },
   formSelect: {
     padding: "10px 14px",
-    background: "rgba(255,255,255,0.03)",
-    border: "1px solid rgba(52, 211, 153, 0.08)",
+    background: "rgba(255,255,255,0.05)",
+    border: "1px solid rgba(52, 211, 153, 0.12)",
     borderRadius: "8px",
     color: "#ffffff",
     fontSize: "14px",
     outline: "none",
     fontFamily: "inherit",
     cursor: "pointer",
+    appearance: "none",
+    WebkitAppearance: "none",
+    MozAppearance: "none",
+    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2334d399' d='M6 8L1 3h10z'/%3E%3C/svg%3E")`,
+    backgroundRepeat: "no-repeat",
+    backgroundPosition: "right 12px center",
+    paddingRight: "36px",
+  },
+  formSelectOption: {
+    background: "#0a140e",
+    color: "#ffffff",
   },
   loadButtonRow: {
     display: "flex",
@@ -1139,14 +1026,21 @@ const styles = {
     width: "100%",
     boxSizing: "border-box",
     padding: "8px 10px",
-    background: "rgba(255,255,255,0.03)",
-    border: "1px solid rgba(52, 211, 153, 0.06)",
+    background: "rgba(255,255,255,0.05)",
+    border: "1px solid rgba(52, 211, 153, 0.1)",
     borderRadius: "6px",
     color: "#ffffff",
     fontSize: "13px",
     outline: "none",
     fontFamily: "inherit",
     cursor: "pointer",
+    appearance: "none",
+    WebkitAppearance: "none",
+    MozAppearance: "none",
+    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpath fill='%2334d399' d='M5 7L1 3h8z'/%3E%3C/svg%3E")`,
+    backgroundRepeat: "no-repeat",
+    backgroundPosition: "right 8px center",
+    paddingRight: "28px",
   },
   modalFooter: {
     display: "flex",
@@ -1168,6 +1062,28 @@ const styles = {
     transition: "all 0.3s ease",
     boxShadow: "0 4px 16px rgba(16, 185, 129, 0.25)",
   },
+  loadingContainer: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    minHeight: "100vh",
+    gap: "16px",
+    background: "#050907",
+  },
+  loadingSpinner: {
+    width: "48px",
+    height: "48px",
+    border: "4px solid rgba(52, 211, 153, 0.08)",
+    borderTop: "4px solid #34d399",
+    borderRadius: "50%",
+    animation: "spin 1s linear infinite",
+  },
+  loadingText: {
+    color: "rgba(255,255,255,0.6)",
+    fontSize: "14px",
+    margin: 0,
+  },
 };
 
 // Add CSS animations and hover effects
@@ -1178,33 +1094,21 @@ styleSheet.textContent = `
     100% { transform: rotate(360deg); }
   }
 
-  @keyframes slideInFromLeft {
-    0% {
-      opacity: 0;
-      transform: translateX(-40px);
-    }
-    100% {
-      opacity: 1;
-      transform: translateX(0);
-    }
+  .logo-home:hover {
+    transform: scale(1.05);
+    filter: brightness(1.2);
   }
 
-  .back-button:hover {
-    background: rgba(52, 211, 153, 0.12);
-    border-color: rgba(52, 211, 153, 0.2);
-    transform: translateX(-2px);
+  .signout-btn:hover {
+    background: rgba(52, 211, 153, 0.08);
+    border-color: rgba(52, 211, 153, 0.4);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(52, 211, 153, 0.1);
   }
 
   .add-button:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(16, 185, 129, 0.35);
-  }
-
-  .top-card:hover {
-    background: rgba(52, 211, 153, 0.03);
-    transform: translateY(-4px);
-    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-    border-color: rgba(52, 211, 153, 0.1);
   }
 
   .table tbody tr:hover {
@@ -1238,6 +1142,44 @@ styleSheet.textContent = `
   .form-input:read-only {
     opacity: 0.6;
     cursor: not-allowed;
+  }
+
+  select option {
+    background: #0a140e;
+    color: #ffffff;
+  }
+
+  select option:hover {
+    background: rgba(52, 211, 153, 0.1);
+  }
+
+  select option:checked {
+    background: rgba(52, 211, 153, 0.15);
+    color: #34d399;
+  }
+
+  @media (max-width: 860px) {
+    .container { padding: 16px !important; }
+    .content-wrapper { padding: 20px !important; }
+    .navbar { padding: 12px 16px !important; }
+    .logo-img { height: 48px !important; }
+  }
+
+  @media (max-width: 700px) {
+    .header { flex-direction: column !important; align-items: stretch !important; gap: 16px !important; }
+    .header-left { flex-wrap: wrap !important; }
+    .title { font-size: 22px !important; }
+    .add-button { padding: 10px 18px !important; font-size: 13px !important; justify-content: center !important; }
+    .result-header, .result-row { grid-template-columns: minmax(180px, 1fr) 80px 80px 70px 90px 80px !important; gap: 8px !important; font-size: 12px !important; }
+    .student-name-text { font-size: 12px !important; }
+    .student-photo, .photo-placeholder { width: 32px !important; height: 32px !important; font-size: 12px !important; }
+  }
+
+  @media (max-width: 480px) {
+    .container { padding: 12px !important; }
+    .content-wrapper { padding: 16px !important; }
+    .result-header, .result-row { grid-template-columns: minmax(140px, 1fr) 60px 60px 55px 70px 65px !important; gap: 4px !important; font-size: 10px !important; padding: 8px !important; }
+    .modal-input, .modal-select { padding: 4px 6px !important; font-size: 11px !important; }
   }
 `;
 document.head.appendChild(styleSheet);
