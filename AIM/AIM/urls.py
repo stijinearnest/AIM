@@ -16,14 +16,14 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path,include
-from rank.views import RankListView, ResultAddView
+from result.views import resultListView, ResultAddView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path("users/", include("users.urls")),
-    path("rank", RankListView.as_view(), name="rank-list-no-slash"),
-    path("rank/", include("rank.urls")),
-    path("rank/update", ResultAddView.as_view(), name="rank-update-no-slash"),
+    path("result", resultListView.as_view(), name="result-list-no-slash"),
+    path("result/", include("result.urls")),
+    path("result/update", ResultAddView.as_view(), name="result-update-no-slash"),
     path("result/add", ResultAddView.as_view(), name="result-add-no-slash"),
     path("result/add/", ResultAddView.as_view(), name="result-add"),
     path("students/", include("students.urls")),

@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("rank", "0003_rename_rank_to_result_add_status"),
+        ("result", "0003_rename_rank_to_result_add_status"),
     ]
 
     operations = [

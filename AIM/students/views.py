@@ -299,6 +299,7 @@ class GetStudentsByAdmissionYearAndProgramme(APIView):
                         "name": student.name,
                         "year_of_admn": student.year_of_admn,
                         "programme_id": student.programme_id,
+                        "photo": student.photo,
                     }
                     for student in students
                 ],

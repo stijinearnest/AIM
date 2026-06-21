@@ -6,7 +6,7 @@ from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 
-from rank.models import Result
+from result.models import Result
 from students.models import Caste, Quota, Religion, Student, programme
 
 

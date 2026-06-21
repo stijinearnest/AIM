@@ -43,6 +43,7 @@ class RankListSerializer(serializers.ModelSerializer):
 
 class RankItemSerializer(serializers.Serializer):
     student_id = serializers.IntegerField()
+    photo = serializers.CharField(required=False, allow_blank=True, allow_null=True)
     rank = serializers.IntegerField(
         min_value=1,
         max_value=3,
@@ -99,8 +100,6 @@ class RankUpdateSerializer(serializers.Serializer):
         ]
         if len(rank_values) != len(set(rank_values)):
             raise serializers.ValidationError("Duplicate rank values are not allowed.")
-        if rank_values and sorted(rank_values) != list(range(1, len(rank_values) + 1)):
-            raise serializers.ValidationError("Ranks must start at 1 without gaps.")
         if len(rank_values) > 3:
             raise serializers.ValidationError("Only ranks 1, 2, and 3 are allowed.")
 

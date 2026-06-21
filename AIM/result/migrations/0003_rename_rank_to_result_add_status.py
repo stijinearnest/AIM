@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("rank", "0002_current_rank_per_student"),
+        ("result", "0002_current_rank_per_student"),
         ("students", "0006_program"),
     ]
 

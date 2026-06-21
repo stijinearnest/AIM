@@ -154,8 +154,13 @@ class ResultAddView(APIView):
             deleted_count, _ = group_results.exclude(student_id__in=student_ids).delete()
 
             for item in results:
+                student = students[item["student_id"]]
+                if "photo" in item:
+                    student.photo = item["photo"]
+                    student.save(update_fields=["photo"])
+
                 Result.objects.update_or_create(
-                    student=students[item["student_id"]],
+                    student=student,
                     defaults={
                         "rank": item.get("rank"),
                         "status": item["status"],
@@ -181,7 +186,7 @@ RankUpdate = ResultAddView
 
 
 @method_decorator(never_cache, name="dispatch")
-class RankListView(APIView):
+class resultListView(APIView):
     # permission_classes = [IsAuthenticated]
     
     def get(self, request):

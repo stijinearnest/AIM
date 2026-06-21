@@ -40,7 +40,7 @@ INSTALLED_APPS = [
     "corsheaders",
     'users',
     "students",
-    "rank",
+    "result",
     'rest_framework',
 ]
 
