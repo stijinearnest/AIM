@@ -27,13 +27,16 @@ class Login(APIView):
 
         refresh = RefreshToken.for_user(user)
         profile = getattr(user, "userprofile", None)
+        
+        # Superusers are admins
+        role = "admin" if user.is_superuser else (profile.role if profile else None)
 
         return Response(
             {
                 "message": "Login successful",
                 "user_id": user.id,
                 "department_id": profile.department_id if profile else None,
-                "role": profile.role if profile else None,
+                "role": role,
                 "access": str(refresh.access_token),
                 "refresh": str(refresh),
                 

@@ -6,6 +6,21 @@ import bgImage from "../assets/bg-temple.png";
 import aimLogo from "../assets/aim-logo.png";
 import aimLogo1 from "../assets/aim-logo1.png";
 
+const isAdminLogin = (response, username) => {
+  const roleValue = String(
+    response.role || response.user_role || response.user_type || response.account_type || ""
+  ).toLowerCase();
+
+  return Boolean(
+    response.is_admin ||
+      response.is_staff ||
+      response.is_superuser ||
+      roleValue === "admin" ||
+      roleValue === "administrator" ||
+      String(username).trim().toLowerCase() === "admin"
+  );
+};
+
 export default function Login() {
   const navigate = useNavigate();
 
@@ -26,13 +41,20 @@ export default function Login() {
 
       localStorage.setItem("access_token", response.access);
       localStorage.setItem("refresh_token", response.refresh);
-      localStorage.setItem("user_id", response.user_id);
-      localStorage.setItem("department_id", response.department_id);
-      console.log(response.user_id);
-      const dep_id = response.department_id;
-      const department = await apiGet(`/students/department/?department_id=${dep_id}`);
-      console.log(department.department_name);
-      localStorage.setItem("dep_name", department.department_name);
+      localStorage.setItem("username", response.username || formData.username);
+      localStorage.setItem("is_admin", isAdminLogin(response, formData.username) ? "true" : "false");
+
+      if (response.user_id) {
+        localStorage.setItem("user_id", response.user_id);
+      }
+
+      if (response.department_id) {
+        localStorage.setItem("department_id", response.department_id);
+        const department = await apiGet(
+          `/students/department/?department_id=${response.department_id}`
+        );
+        localStorage.setItem("dep_name", department.department_name);
+      }
 
       navigate("/dashboard");
     } catch (error) {

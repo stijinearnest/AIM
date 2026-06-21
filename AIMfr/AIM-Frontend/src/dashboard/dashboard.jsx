@@ -1,16 +1,12 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Rank from "../rank/rank";
-import Placement from "../placement/placement";
 import aimLogo from "../assets/aim-logo1.png";
 
 export default function Dashboard() {
-  const [activeTab, setActiveTab] = useState("rank");
   const navigate = useNavigate();
   const username = localStorage.getItem("username") || "there";
+  const isAdmin = localStorage.getItem("is_admin") === "true";
 
   const handleTabChange = (tab) => {
-    setActiveTab(tab);
     navigate(`/${tab}`);
   };
 
@@ -41,10 +37,10 @@ export default function Dashboard() {
         <circle cx="1850" cy="900" r="840" fill="none" stroke="rgba(52,211,153,0.06)" strokeWidth="1" />
       </svg>
 
-      <div style={styles.container}>
+      <div className="container" style={styles.container}>
         {/* Navbar with border and highlight */}
-        <header style={styles.navbar}>
-          <img src={aimLogo} alt="AIM" style={styles.logoImg} />
+        <header className="navbar" style={styles.navbar}>
+          <img src={aimLogo} alt="AIM" className="logo-img" style={styles.logoImg} />
 
           <button
             className="signout-btn"
@@ -67,11 +63,15 @@ export default function Dashboard() {
         <div style={styles.welcomeBlock}>
           <p style={styles.welcomeEyebrow}>Welcome back,</p>
           <h1 style={styles.welcomeName}>{username}</h1>
-          <p style={styles.welcomeSub}>Manage your AIM profile and track your progress</p>
+          <p style={styles.welcomeSub}>
+            {isAdmin
+              ? "Manage AIM modules and register new users"
+              : "Manage your AIM profile and track your progress"}
+          </p>
         </div>
 
         {/* Navigation Cards - Square with title below icon */}
-        <nav style={styles.cardRow}>
+        <nav className="card-row" style={isAdmin ? styles.adminCardRow : styles.cardRow}>
           <button
             className="nav-card"
             style={styles.navCard}
@@ -98,6 +98,24 @@ export default function Dashboard() {
             </span>
             <span style={styles.navCardLabel}>Placement</span>
           </button>
+
+          {isAdmin && (
+            <button
+              className="nav-card"
+              style={styles.navCard}
+              onClick={() => handleTabChange("register-user")}
+            >
+              <span style={styles.navCardIcon}>
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="2">
+                  <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" strokeLinecap="round" strokeLinejoin="round" />
+                  <circle cx="9" cy="7" r="4" strokeLinecap="round" strokeLinejoin="round" />
+                  <line x1="19" y1="8" x2="19" y2="14" strokeLinecap="round" />
+                  <line x1="22" y1="11" x2="16" y2="11" strokeLinecap="round" />
+                </svg>
+              </span>
+              <span style={styles.navCardLabel}>Register User</span>
+            </button>
+          )}
         </nav>
 
         {/* Content Area */}
@@ -210,6 +228,13 @@ const styles = {
     gap: "20px",
     marginBottom: "40px",
     maxWidth: "500px",
+  },
+  adminCardRow: {
+    display: "grid",
+    gridTemplateColumns: "repeat(3, 1fr)",
+    gap: "20px",
+    marginBottom: "40px",
+    maxWidth: "760px",
   },
   navCard: {
     display: "flex",

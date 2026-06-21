@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { apiGet, apiPost } from "../api/apiService";
 import aimLogo from "../assets/aim-logo1.png";
@@ -29,6 +29,7 @@ const fileToBase64 = (file) =>
 
 export default function Rank() {
   const navigate = useNavigate();
+  const isAdmin = localStorage.getItem("is_admin") === "true";
   const [ranks, setRanks] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -43,7 +44,7 @@ export default function Rank() {
     year_of_admn: "",
   });
 
-  const loadRanks = async () => {
+  const loadRanks = useCallback(async () => {
     try {
       const departmentId = Number(localStorage.getItem("department_id"));
       console.log("Department ID:", departmentId);
@@ -56,15 +57,43 @@ export default function Rank() {
         return;
       }
 
-      const filteredRanks = rankList.filter(
-        (student) => Number(student.department_id) === departmentId
-      );
+      const filteredRanks = isAdmin
+        ? rankList
+        : rankList.filter((student) => Number(student.department_id) === departmentId);
 
       filteredRanks.sort((a, b) => a.rank - b.rank);
+
+      const departmentNamesById = new Map();
+
+      if (isAdmin) {
+        const departmentIds = [
+          ...new Set(
+            filteredRanks
+              .map((student) => student.department_id)
+              .filter((departmentIdValue) => departmentIdValue != null)
+              .map((departmentIdValue) => Number(departmentIdValue))
+          ),
+        ];
+
+        await Promise.all(
+          departmentIds.map(async (rankDepartmentId) => {
+            try {
+              const department = await apiGet(
+                `/students/department/?department_id=${rankDepartmentId}`
+              );
+              departmentNamesById.set(rankDepartmentId, department.department_name);
+            } catch (error) {
+              console.error("Department details fetch failed:", error);
+              departmentNamesById.set(rankDepartmentId, `Department ${rankDepartmentId}`);
+            }
+          })
+        );
+      }
 
       const ranksWithStudentDetails = await Promise.all(
         filteredRanks.map(async (studentRank) => {
           try {
+            const rankDepartmentId = Number(studentRank.department_id);
             const studentDetails = await apiGet(
               `/students/student/?stud_id=${studentRank.student_id}`
             );
@@ -75,6 +104,13 @@ export default function Rank() {
               roll_no: studentDetails.roll_no,
               student_name: studentDetails.name || studentRank.student_name,
               programme_name: studentDetails.programme?.programme_name || studentRank.programme_name,
+              department_name:
+                studentDetails.department?.department_name ||
+                studentDetails.department_name ||
+                studentRank.department_name ||
+                studentRank.department?.department_name ||
+                departmentNamesById.get(rankDepartmentId) ||
+                `Department ${studentRank.department_id || "-"}`,
               year_of_admn: studentDetails.year_of_admn || studentRank.year_of_admn,
               photo: studentDetails.photo || studentRank.photo || "",
             };
@@ -92,7 +128,7 @@ export default function Rank() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [isAdmin]);
 
   const loadProgrammes = async () => {
     try {
@@ -136,7 +172,7 @@ export default function Rank() {
     }, 0);
 
     return () => window.clearTimeout(timeoutId);
-  }, []);
+  }, [loadRanks]);
 
   const saveResults = async () => {
     try {
@@ -272,16 +308,22 @@ export default function Rank() {
             <div style={styles.headerLeft}>
               <div style={styles.titleWrapper}>
                 <h2 style={styles.title}>🏆 Rank Holders</h2>
-                <p style={styles.subtitle}>Department rankings and performance</p>
+                <p style={styles.subtitle}>
+                  {isAdmin
+                    ? "Rankings and performance across all departments"
+                    : "Department rankings and performance"}
+                </p>
               </div>
             </div>
-            <button style={styles.addButton} onClick={openAddResultModal}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <line x1="12" y1="5" x2="12" y2="19" strokeLinecap="round"/>
-                <line x1="5" y1="12" x2="19" y2="12" strokeLinecap="round"/>
-              </svg>
-              Add Result
-            </button>
+            {!isAdmin && (
+              <button style={styles.addButton} onClick={openAddResultModal}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <line x1="12" y1="5" x2="12" y2="19" strokeLinecap="round"/>
+                  <line x1="5" y1="12" x2="19" y2="12" strokeLinecap="round"/>
+                </svg>
+                Add Result
+              </button>
+            )}
           </div>
 
           {errorMessage && (
@@ -311,6 +353,7 @@ export default function Rank() {
                         <th style={styles.th}>Rank</th>
                         <th style={styles.th}>Name</th>
                         <th style={styles.th}>Admission No</th>
+                        {isAdmin && <th style={styles.th}>Department</th>}
                         <th style={styles.th}>Programme</th>
                         <th style={styles.th}>OGPA</th>
                         <th style={styles.th}>Marks</th>
@@ -324,6 +367,11 @@ export default function Rank() {
                           </td>
                           <td style={styles.td}>{student.student_name}</td>
                           <td style={styles.td}>{student.admission_no || "-"}</td>
+                          {isAdmin && (
+                            <td style={styles.td}>
+                              {student.department_name || `Department ${student.department_id || "-"}`}
+                            </td>
+                          )}
                           <td style={styles.td}>{student.programme_name}</td>
                           <td style={styles.td}>
                             <span style={styles.ogpaBadge}>{student.ogpa || "N/A"}</span>
@@ -341,7 +389,9 @@ export default function Rank() {
               <div style={styles.emptyState}>
                 <span style={styles.emptyIcon}>📊</span>
                 <p style={styles.emptyText}>No rank holders found</p>
-                <p style={styles.emptySubtext}>Department ID: {localStorage.getItem("department_id")}</p>
+                <p style={styles.emptySubtext}>
+                  {isAdmin ? "All departments" : `Department ID: ${localStorage.getItem("department_id")}`}
+                </p>
               </div>
             )}
           </div>

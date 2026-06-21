@@ -3,6 +3,7 @@ import Login from "./login/login";
 import Dashboard from "./dashboard/dashboard";
 import Rank from "./rank/rank";
 import Placement from "./placement/placement";
+import RegisterUser from "./admin/registerUser";
 function App() {
   return (
     <BrowserRouter>
@@ -11,6 +12,7 @@ function App() {
          <Route path="/dashboard" element={<Dashboard />} />
          <Route path="/rank" element={<Rank />} />
          <Route path="/placement" element={<Placement />} />
+         <Route path="/register-user" element={<RegisterUser />} />
       </Routes>
     </BrowserRouter>
   );
