@@ -5,12 +5,16 @@ import aimLogo from "../assets/aim-logo1.png";
 
 export default function StudentResults() {
   const navigate = useNavigate();
+  const username = localStorage.getItem("username") || "there";
+  const department = localStorage.getItem("dep_name") || "Department";
   const [results, setResults] = useState([]);
   const [departments, setDepartments] = useState([]);
   const [programmes, setProgrammes] = useState([]);
   const [loading, setLoading] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [showDropdown, setShowDropdown] = useState(false);
   const containerRef = useRef(null);
+  const dropdownRef = useRef(null);
 
   const [filters, setFilters] = useState({
     department_id: "",
@@ -29,9 +33,24 @@ export default function StudentResults() {
       }
     };
 
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setShowDropdown(false);
+      }
+    };
+
     window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
   }, []);
+
+  const handleSignOut = () => {
+    localStorage.clear();
+    navigate("/");
+  };
 
   useEffect(() => {
     loadDepartments();
@@ -211,7 +230,7 @@ export default function StudentResults() {
       </svg>
 
       <div style={styles.container}>
-        {/* Navbar */}
+        {/* Navbar with user profile dropdown */}
         <header style={styles.navbar}>
           <img 
             src={aimLogo} 
@@ -221,21 +240,50 @@ export default function StudentResults() {
             className="logo-home"
           />
 
-          <button
-            className="signout-btn"
-            onClick={() => {
-              localStorage.clear();
-              navigate("/");
-            }}
-            style={styles.logoutBtn}
-          >
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" strokeLinecap="round" strokeLinejoin="round"/>
-              <polyline points="16 17 21 12 16 7" strokeLinecap="round" strokeLinejoin="round"/>
-              <line x1="21" y1="12" x2="9" y2="12" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-            Sign Out
-          </button>
+          <div style={styles.userMenu} ref={dropdownRef}>
+            <button
+              className="user-menu-btn"
+              style={styles.userMenuBtn}
+              onClick={() => setShowDropdown(!showDropdown)}
+            >
+              <span style={styles.userAvatar}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <circle cx="12" cy="7" r="4" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </span>
+              <span style={styles.userName}>{username}</span>
+            </button>
+
+            {showDropdown && (
+              <div style={styles.dropdown}>
+                <div style={styles.dropdownHeader}>
+                  <span style={styles.dropdownAvatar}>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" strokeLinecap="round" strokeLinejoin="round"/>
+                      <circle cx="12" cy="7" r="4" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </span>
+                  <div style={styles.dropdownUserInfo}>
+                    <span style={styles.dropdownUsername}>{username}</span>
+                    <span style={styles.dropdownDepartment}>{department}</span>
+                  </div>
+                </div>
+                <div style={styles.dropdownDivider}></div>
+                <button
+                  style={styles.dropdownSignOut}
+                  onClick={handleSignOut}
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" strokeLinecap="round" strokeLinejoin="round"/>
+                    <polyline points="16 17 21 12 16 7" strokeLinecap="round" strokeLinejoin="round"/>
+                    <line x1="21" y1="12" x2="9" y2="12" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  Sign Out
+                </button>
+              </div>
+            )}
+          </div>
         </header>
 
         {/* Main Content */}
@@ -474,6 +522,8 @@ const styles = {
     border: "1px solid rgba(52, 211, 153, 0.12)",
     borderRadius: "16px",
     boxShadow: "0 4px 24px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(52, 211, 153, 0.05)",
+    position: "relative",
+    zIndex: 100,
   },
   logoImg: {
     height: "84px",
@@ -482,20 +532,103 @@ const styles = {
     cursor: "pointer",
     transition: "all 0.25s ease",
   },
-  logoutBtn: {
+  userMenu: {
+    position: "relative",
+    zIndex: 9999,
+  },
+  userMenuBtn: {
     display: "flex",
     alignItems: "center",
-    gap: "9px",
-    padding: "10px 20px",
+    gap: "10px",
+    padding: "8px 16px 8px 12px",
     background: "rgba(255, 255, 255, 0.03)",
     border: "1px solid rgba(52, 211, 153, 0.15)",
     borderRadius: "10px",
-    color: "#34d399",
+    color: "#ffffff",
+    cursor: "pointer",
+    fontFamily: "inherit",
+    transition: "all 0.25s ease",
+  },
+  userAvatar: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    width: "32px",
+    height: "32px",
+    borderRadius: "50%",
+    background: "linear-gradient(135deg, #10b981, #059669)",
+    color: "#ffffff",
+    flexShrink: 0,
+  },
+  userName: {
+    fontSize: "14px",
+    fontWeight: "500",
+    color: "rgba(255,255,255,0.85)",
+  },
+  dropdown: {
+    position: "absolute",
+    right: 0,
+    top: "calc(100% + 8px)",
+    minWidth: "220px",
+    background: "#0a140e",
+    border: "1px solid rgba(52, 211, 153, 0.12)",
+    borderRadius: "12px",
+    boxShadow: "0 8px 32px rgba(0, 0, 0, 0.4), 0 0 40px rgba(0, 0, 0, 0.2)",
+    padding: "8px",
+    zIndex: 99999,
+    animation: "dropdownSlide 0.2s ease-out",
+  },
+  dropdownHeader: {
+    display: "flex",
+    alignItems: "center",
+    gap: "12px",
+    padding: "12px 12px 8px 12px",
+  },
+  dropdownAvatar: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    width: "40px",
+    height: "40px",
+    borderRadius: "50%",
+    background: "linear-gradient(135deg, #10b981, #059669)",
+    color: "#ffffff",
+    flexShrink: 0,
+  },
+  dropdownUserInfo: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "2px",
+  },
+  dropdownUsername: {
+    color: "#ffffff",
+    fontSize: "14px",
+    fontWeight: "600",
+  },
+  dropdownDepartment: {
+    color: "rgba(255,255,255,0.4)",
+    fontSize: "12px",
+  },
+  dropdownDivider: {
+    height: "1px",
+    background: "rgba(52, 211, 153, 0.08)",
+    margin: "4px 8px",
+  },
+  dropdownSignOut: {
+    display: "flex",
+    alignItems: "center",
+    gap: "10px",
+    width: "100%",
+    padding: "10px 12px",
+    background: "transparent",
+    border: "none",
+    borderRadius: "8px",
+    color: "#f87171",
     fontSize: "14px",
     fontWeight: "500",
     cursor: "pointer",
     fontFamily: "inherit",
-    transition: "all 0.25s ease",
+    transition: "all 0.2s ease",
   },
   contentWrapper: {
     background: "rgba(8, 16, 13, 0.6)",
@@ -504,6 +637,8 @@ const styles = {
     border: "1px solid rgba(52, 211, 153, 0.08)",
     padding: "32px",
     boxShadow: "0 8px 32px rgba(0, 0, 0, 0.35)",
+    position: "relative",
+    zIndex: 1,
   },
   header: {
     display: "flex",
@@ -778,16 +913,23 @@ if (typeof document !== "undefined" && !document.getElementById("student-results
       100% { opacity: 1; transform: scale(1.05); }
     }
 
+    @keyframes dropdownSlide {
+      0% { opacity: 0; transform: translateY(-8px) scale(0.98); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
     .logo-home:hover {
       transform: scale(1.05);
       filter: brightness(1.2);
     }
 
-    .signout-btn:hover {
-      background: rgba(52, 211, 153, 0.08);
-      border-color: rgba(52, 211, 153, 0.4);
-      transform: translateY(-1px);
-      box-shadow: 0 4px 16px rgba(52, 211, 153, 0.1);
+    .user-menu-btn:hover {
+      background: rgba(52, 211, 153, 0.06);
+      border-color: rgba(52, 211, 153, 0.3);
+    }
+
+    .dropdown-signout:hover {
+      background: rgba(239, 68, 68, 0.08);
     }
 
     .search-button:hover {
@@ -828,6 +970,7 @@ if (typeof document !== "undefined" && !document.getElementById("student-results
         transition: none !important; 
         animation: none !important;
       }
+      .dropdown { animation: none !important; }
     }
 
     @media (max-width: 860px) {
@@ -835,6 +978,13 @@ if (typeof document !== "undefined" && !document.getElementById("student-results
       .content-wrapper { padding: 20px !important; }
       .navbar { padding: 12px 16px !important; }
       .logo-img { height: 48px !important; }
+      .user-menu-btn { padding: 6px 12px 6px 8px !important; }
+      .user-name { font-size: 13px !important; }
+      .user-avatar { width: 28px !important; height: 28px !important; }
+      .user-avatar svg { width: 16px !important; height: 16px !important; }
+      .dropdown { right: -8px !important; min-width: 200px !important; }
+      .dropdown-avatar { width: 36px !important; height: 36px !important; }
+      .dropdown-avatar svg { width: 20px !important; height: 20px !important; }
     }
 
     @media (max-width: 700px) {
@@ -853,6 +1003,7 @@ if (typeof document !== "undefined" && !document.getElementById("student-results
       .filters-card { padding: 16px !important; }
       .results-header { flex-direction: column !important; align-items: flex-start !important; gap: 8px !important; }
       .table td, .table th { padding: 8px !important; font-size: 11px !important; }
+      .dropdown { right: -12px !important; min-width: 180px !important; }
     }
   `;
   document.head.appendChild(styleSheet);

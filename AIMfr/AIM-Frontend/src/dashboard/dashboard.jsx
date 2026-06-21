@@ -5,12 +5,20 @@ import aimLogo from "../assets/aim-logo1.png";
 export default function Dashboard() {
   const navigate = useNavigate();
   const username = localStorage.getItem("username") || "there";
+  const department = localStorage.getItem("dep_name") || "Department";
   const isAdmin = localStorage.getItem("is_admin") === "true";
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [showDropdown, setShowDropdown] = useState(false);
   const containerRef = useRef(null);
+  const dropdownRef = useRef(null);
 
   const handleTabChange = (tab) => {
     navigate(`/${tab}`);
+  };
+
+  const handleSignOut = () => {
+    localStorage.clear();
+    navigate("/");
   };
 
   useEffect(() => {
@@ -23,8 +31,18 @@ export default function Dashboard() {
       }
     };
 
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setShowDropdown(false);
+      }
+    };
+
     window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
   }, []);
 
   return (
@@ -141,25 +159,54 @@ export default function Dashboard() {
       </svg>
 
       <div className="container" style={styles.container}>
-        {/* Navbar with border and highlight */}
+        {/* Navbar with user profile dropdown */}
         <header className="navbar" style={styles.navbar}>
           <img src={aimLogo} alt="AIM" className="logo-img" style={styles.logoImg} />
 
-          <button
-            className="signout-btn"
-            onClick={() => {
-              localStorage.clear();
-              navigate("/");
-            }}
-            style={styles.logoutBtn}
-          >
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" strokeLinecap="round" strokeLinejoin="round"/>
-              <polyline points="16 17 21 12 16 7" strokeLinecap="round" strokeLinejoin="round"/>
-              <line x1="21" y1="12" x2="9" y2="12" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-            Sign Out
-          </button>
+          <div style={styles.userMenu} ref={dropdownRef}>
+            <button
+              className="user-menu-btn"
+              style={styles.userMenuBtn}
+              onClick={() => setShowDropdown(!showDropdown)}
+            >
+              <span style={styles.userAvatar}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <circle cx="12" cy="7" r="4" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </span>
+              <span style={styles.userName}>{username}</span>
+            </button>
+
+            {showDropdown && (
+              <div style={styles.dropdown}>
+                <div style={styles.dropdownHeader}>
+                  <span style={styles.dropdownAvatar}>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" strokeLinecap="round" strokeLinejoin="round"/>
+                      <circle cx="12" cy="7" r="4" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </span>
+                  <div style={styles.dropdownUserInfo}>
+                    <span style={styles.dropdownUsername}>{username}</span>
+                    <span style={styles.dropdownDepartment}>{department}</span>
+                  </div>
+                </div>
+                <div style={styles.dropdownDivider}></div>
+                <button
+                  style={styles.dropdownSignOut}
+                  onClick={handleSignOut}
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" strokeLinecap="round" strokeLinejoin="round"/>
+                    <polyline points="16 17 21 12 16 7" strokeLinecap="round" strokeLinejoin="round"/>
+                    <line x1="21" y1="12" x2="9" y2="12" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  Sign Out
+                </button>
+              </div>
+            )}
+          </div>
         </header>
 
         {/* Welcome Section */}
@@ -308,20 +355,102 @@ const styles = {
     width: "auto",
     display: "block",
   },
-  logoutBtn: {
+  userMenu: {
+    position: "relative",
+  },
+  userMenuBtn: {
     display: "flex",
     alignItems: "center",
-    gap: "9px",
-    padding: "10px 20px",
+    gap: "10px",
+    padding: "8px 16px 8px 12px",
     background: "rgba(255, 255, 255, 0.03)",
     border: "1px solid rgba(52, 211, 153, 0.15)",
     borderRadius: "10px",
-    color: "#34d399",
+    color: "#ffffff",
+    cursor: "pointer",
+    fontFamily: "inherit",
+    transition: "all 0.25s ease",
+  },
+  userAvatar: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    width: "32px",
+    height: "32px",
+    borderRadius: "50%",
+    background: "linear-gradient(135deg, #10b981, #059669)",
+    color: "#ffffff",
+    flexShrink: 0,
+  },
+  userName: {
+    fontSize: "14px",
+    fontWeight: "500",
+    color: "rgba(255,255,255,0.85)",
+  },
+  dropdown: {
+    position: "absolute",
+    right: 0,
+    top: "calc(100% + 8px)",
+    minWidth: "220px",
+    background: "#0a140e",
+    border: "1px solid rgba(52, 211, 153, 0.12)",
+    borderRadius: "12px",
+    boxShadow: "0 8px 32px rgba(0, 0, 0, 0.4), 0 0 40px rgba(0, 0, 0, 0.2)",
+    padding: "8px",
+    zIndex: 100,
+    animation: "dropdownSlide 0.2s ease-out",
+  },
+  dropdownHeader: {
+    display: "flex",
+    alignItems: "center",
+    gap: "12px",
+    padding: "12px 12px 8px 12px",
+  },
+  dropdownAvatar: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    width: "40px",
+    height: "40px",
+    borderRadius: "50%",
+    background: "linear-gradient(135deg, #10b981, #059669)",
+    color: "#ffffff",
+    flexShrink: 0,
+  },
+  dropdownUserInfo: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "2px",
+  },
+  dropdownUsername: {
+    color: "#ffffff",
+    fontSize: "14px",
+    fontWeight: "600",
+  },
+  dropdownDepartment: {
+    color: "rgba(255,255,255,0.4)",
+    fontSize: "12px",
+  },
+  dropdownDivider: {
+    height: "1px",
+    background: "rgba(52, 211, 153, 0.08)",
+    margin: "4px 8px",
+  },
+  dropdownSignOut: {
+    display: "flex",
+    alignItems: "center",
+    gap: "10px",
+    width: "100%",
+    padding: "10px 12px",
+    background: "transparent",
+    border: "none",
+    borderRadius: "8px",
+    color: "#f87171",
     fontSize: "14px",
     fontWeight: "500",
     cursor: "pointer",
     fontFamily: "inherit",
-    transition: "all 0.25s ease",
+    transition: "all 0.2s ease",
   },
   welcomeBlock: {
     marginBottom: "40px",
@@ -413,19 +542,20 @@ if (typeof document !== "undefined" && !document.getElementById("dashboard-style
       100% { opacity: 1; transform: scale(1.05); }
     }
 
-    .signout-btn:hover {
-      background: rgba(52, 211, 153, 0.08);
-      border-color: rgba(52, 211, 153, 0.4);
-      transform: translateY(-1px);
-      box-shadow: 0 4px 16px rgba(52, 211, 153, 0.1);
+    @keyframes dropdownSlide {
+      0% { opacity: 0; transform: translateY(-8px) scale(0.98); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
     }
 
-    .signout-btn:focus-visible {
-      outline: 2px solid #34d399;
-      outline-offset: 2px;
+    .user-menu-btn:hover {
+      background: rgba(52, 211, 153, 0.06);
+      border-color: rgba(52, 211, 153, 0.3);
     }
 
-    /* Square card hover effect */
+    .dropdown-signout:hover {
+      background: rgba(239, 68, 68, 0.08);
+    }
+
     .nav-card:hover {
       background: rgba(52, 211, 153, 0.06);
       border-color: rgba(52, 211, 153, 0.3);
@@ -443,11 +573,12 @@ if (typeof document !== "undefined" && !document.getElementById("dashboard-style
     }
 
     @media (prefers-reduced-motion: reduce) {
-      .signout-btn, .nav-card, .star-field span, .arc-field circle { 
+      .nav-card, .star-field span, .arc-field circle { 
         transition: none !important; 
         animation: none !important;
       }
       .nav-card:hover { transform: none !important; }
+      .dropdown { animation: none !important; }
     }
 
     @media (max-width: 860px) {
@@ -460,10 +591,10 @@ if (typeof document !== "undefined" && !document.getElementById("dashboard-style
         margin-bottom: 32px !important;
       }
       .logo-img { height: 48px !important; }
-      .logout-btn { 
-        padding: 8px 14px !important;
-        font-size: 13px !important;
-      }
+      .user-menu-btn { padding: 6px 12px 6px 8px !important; }
+      .user-name { font-size: 13px !important; }
+      .user-avatar { width: 28px !important; height: 28px !important; }
+      .user-avatar svg { width: 16px !important; height: 16px !important; }
       .card-row { 
         grid-template-columns: 1fr 1fr !important;
         max-width: 100% !important;
@@ -483,6 +614,12 @@ if (typeof document !== "undefined" && !document.getElementById("dashboard-style
       .welcome-name {
         font-size: 32px !important;
       }
+      .dropdown {
+        right: -8px !important;
+        min-width: 200px !important;
+      }
+      .dropdown-avatar { width: 36px !important; height: 36px !important; }
+      .dropdown-avatar svg { width: 20px !important; height: 20px !important; }
     }
 
     @media (max-width: 480px) {
@@ -495,133 +632,10 @@ if (typeof document !== "undefined" && !document.getElementById("dashboard-style
       .container {
         padding: 16px !important;
       }
-    }
-
-    /* Style child components that might be rendered inside */
-    .content-card > * {
-      color: #ffffff !important;
-    }
-
-    .content-card .btn,
-    .content-card .form-control,
-    .content-card .table {
-      background: rgba(255, 255, 255, 0.03) !important;
-      border-color: rgba(52, 211, 153, 0.08) !important;
-      color: #ffffff !important;
-    }
-
-    .content-card .btn:hover {
-      background: rgba(255, 255, 255, 0.06) !important;
-    }
-
-    .content-card .btn-primary {
-      background: linear-gradient(135deg, #10b981, #059669) !important;
-      border-color: transparent !important;
-    }
-
-    .content-card .btn-primary:hover {
-      background: linear-gradient(135deg, #059669, #047857) !important;
-      box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3) !important;
-    }
-
-    .content-card .btn-outline-primary {
-      border-color: rgba(52, 211, 153, 0.3) !important;
-      color: #34d399 !important;
-    }
-
-    .content-card .btn-outline-primary:hover {
-      background: rgba(52, 211, 153, 0.1) !important;
-      border-color: rgba(52, 211, 153, 0.5) !important;
-    }
-
-    .content-card .table {
-      background: transparent !important;
-    }
-
-    .content-card .table td,
-    .content-card .table th {
-      border-color: rgba(52, 211, 153, 0.06) !important;
-      color: rgba(255, 255, 255, 0.8) !important;
-    }
-
-    .content-card .table thead th {
-      color: rgba(255, 255, 255, 0.5) !important;
-      font-weight: 500;
-    }
-
-    .content-card .table tbody tr:hover {
-      background: rgba(52, 211, 153, 0.02) !important;
-    }
-
-    .content-card .form-control:focus,
-    .content-card .form-select:focus {
-      border-color: rgba(52, 211, 153, 0.4) !important;
-      box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.08) !important;
-    }
-
-    .content-card .form-control:hover,
-    .content-card .form-select:hover {
-      border-color: rgba(52, 211, 153, 0.2) !important;
-    }
-
-    .content-card .alert-warning {
-      background: rgba(52, 211, 153, 0.05) !important;
-      border-color: rgba(52, 211, 153, 0.1) !important;
-      color: #34d399 !important;
-    }
-
-    .content-card .alert-danger {
-      background: rgba(239, 68, 68, 0.1) !important;
-      border-color: rgba(239, 68, 68, 0.15) !important;
-      color: #f87171 !important;
-    }
-
-    .content-card .card {
-      background: rgba(255, 255, 255, 0.02) !important;
-      border-color: rgba(52, 211, 153, 0.06) !important;
-    }
-
-    .content-card .card-header {
-      background: rgba(52, 211, 153, 0.03) !important;
-      border-color: rgba(52, 211, 153, 0.06) !important;
-      color: #34d399 !important;
-    }
-
-    .content-card .modal-content {
-      background: #0a140e !important;
-      border-color: rgba(52, 211, 153, 0.1) !important;
-    }
-
-    .content-card .modal-header {
-      border-color: rgba(52, 211, 153, 0.06) !important;
-    }
-
-    .content-card .modal-footer {
-      border-color: rgba(52, 211, 153, 0.06) !important;
-    }
-
-    .content-card .btn-success {
-      background: linear-gradient(135deg, #10b981, #059669) !important;
-      border: none !important;
-    }
-
-    .content-card .btn-success:hover {
-      background: linear-gradient(135deg, #059669, #047857) !important;
-      box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3) !important;
-    }
-
-    .content-card .btn-success:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-
-    .content-card .btn-close {
-      filter: invert(1) brightness(2);
-      opacity: 0.5;
-    }
-
-    .content-card .btn-close:hover {
-      opacity: 1;
+      .dropdown {
+        right: -12px !important;
+        min-width: 180px !important;
+      }
     }
   `;
   document.head.appendChild(styleSheet);
