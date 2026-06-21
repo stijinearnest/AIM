@@ -13,7 +13,7 @@ class Migration(migrations.Migration):
         migrations.AddConstraint(
             model_name="result",
             constraint=models.CheckConstraint(
-                check=models.Q(rank__in=[1, 2, 3]) | models.Q(rank__isnull=True),
+                condition=models.Q(rank__in=[1, 2, 3]) | models.Q(rank__isnull=True),
                 name="result_rank_1_to_3_or_null",
             ),
         ),
