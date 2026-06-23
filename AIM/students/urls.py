@@ -25,8 +25,18 @@ urlpatterns = [
         name="get-students-by-admission-year-and-programme",
     ),
     path(
-        "students/update-status/",
+        "update-student-status/",
         UpdateStudentStatus.as_view(),
         name="update-student-status",
+    ),
+    path(
+        "update-status/",
+        UpdateStudentStatus.as_view(),
+        name="update-status",
+    ),
+    path(
+        "students/update-status/",
+        UpdateStudentStatus.as_view(),
+        name="legacy-update-student-status",
     ),
 ]

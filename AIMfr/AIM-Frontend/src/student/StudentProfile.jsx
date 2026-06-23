@@ -447,8 +447,8 @@ export default function StudentProfile() {
                               {savingId === student.stud_id
                                 ? "Saving..."
                                 : isStudying
-                                  ? "Set False"
-                                  : "Set True"}
+                                  ? "Remove"
+                                  : "Add"}
                             </button>
                           </td>
                         </tr>

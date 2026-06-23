@@ -23,6 +23,7 @@ urlpatterns = [
     path("users/", include("users.urls")),
     path("result", resultListView.as_view(), name="result-list-no-slash"),
     path("result/", include("result.urls")),
+    path("rank/", include("result.urls")),
     path("result/update", ResultAddView.as_view(), name="result-update-no-slash"),
     path("result/add", ResultAddView.as_view(), name="result-add-no-slash"),
     path("result/add/", ResultAddView.as_view(), name="result-add"),

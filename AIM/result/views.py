@@ -1,4 +1,5 @@
 import re
+from decimal import Decimal, InvalidOperation
 
 from django.db import transaction
 from django.utils.decorators import method_decorator
@@ -17,6 +18,18 @@ def parse_int_param(value, field_name):
     try:
         return int(value)
     except (TypeError, ValueError):
+        raise ValueError({field_name: "Enter a valid number."})
+
+
+def parse_decimal_value(value, field_name, required=True):
+    if value in (None, ""):
+        if required:
+            raise ValueError({field_name: "This field is required."})
+        return None
+
+    try:
+        return Decimal(str(value))
+    except (InvalidOperation, TypeError, ValueError):
         raise ValueError({field_name: "Enter a valid number."})
 
 
@@ -331,3 +344,87 @@ class StudentResultsView(APIView):
         )
 
         return Response(serializer.data)
+    
+class ResultEditView(APIView):
+    def get_result(self, student_id):
+        return Result.objects.select_related(
+            "student",
+            "student__programme",
+            "student__programme__department",
+        ).get(student_id=student_id)
+
+    def get(self, request, student_id):
+        try:
+            result = self.get_result(student_id)
+        except Result.DoesNotExist:
+            return Response(
+                {"error": "Result not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        serializer = StudentResultSerializer(result)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def put(self, request, student_id):
+        try:
+            result = self.get_result(student_id)
+        except Result.DoesNotExist:
+            return Response(
+                {"error": "Result not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        rank = request.data.get("rank")
+        status_value = request.data.get("status")
+        ogpa = request.data.get("ogpa")
+        marks = request.data.get("marks")
+        result_year = request.data.get("result_year")
+
+        if status_value not in dict(Result.STATUS_CHOICES):
+            return Response(
+                {"status": "Enter a valid status."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if rank not in (None, ""):
+            try:
+                rank = int(rank)
+            except (TypeError, ValueError):
+                return Response(
+                    {"rank": "Enter a valid rank."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            if rank not in [1, 2, 3]:
+                return Response(
+                    {"rank": "Rank must be 1, 2, or 3."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+        else:
+            rank = None
+
+        try:
+            result_year = int(result_year)
+        except (TypeError, ValueError):
+            return Response(
+                {"result_year": "Enter a valid result year."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            ogpa = parse_decimal_value(ogpa, "ogpa")
+            marks = parse_decimal_value(marks, "marks", required=False)
+        except ValueError as error:
+            return Response(error.args[0], status=status.HTTP_400_BAD_REQUEST)
+
+        result.rank = rank
+        result.status = status_value
+        result.ogpa = ogpa
+        result.marks = marks
+        result.result_year = result_year
+
+        result.save()
+
+        return Response({
+            "message": "Result updated successfully",
+            "result": StudentResultSerializer(result).data,
+        })

@@ -250,7 +250,13 @@ class GetStudent(APIView):
 
 class UpdateStudentStatus(APIView):
 
+    def post(self, request):
+        return self._update_status(request)
+
     def put(self, request):
+        return self._update_status(request)
+
+    def _update_status(self, request):
         stud_id = request.data.get("stud_id")
         is_studying = request.data.get("is_studying")
 

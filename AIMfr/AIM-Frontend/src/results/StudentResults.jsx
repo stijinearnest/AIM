@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { apiGet, apiPost } from "../api/apiService";
+import { apiGet, apiPost, apiPut } from "../api/apiService";
 import aimLogo from "../assets/aim-logo1.png";
 import Toast from "../components/Toast";
 import { isActiveStudent } from "../utils/studentStatus";
@@ -40,8 +40,11 @@ export default function StudentResults() {
   const [programmes, setProgrammes] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [editSaving, setEditSaving] = useState(false);
   const [students, setStudents] = useState([]);
+  const [editingStudent, setEditingStudent] = useState(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [showDropdown, setShowDropdown] = useState(false);
   const [toast, setToast] = useState(null);
@@ -58,6 +61,14 @@ export default function StudentResults() {
     department_id: isAdmin ? "" : userDepartmentId,
     programme_id: "",
     year_of_admn: "",
+  });
+
+  const [editForm, setEditForm] = useState({
+    rank: "",
+    status: "P",
+    ogpa: "",
+    marks: "",
+    result_year: new Date().getFullYear(),
   });
 
   useEffect(() => {
@@ -220,6 +231,53 @@ export default function StudentResults() {
       showToast("Failed to save results", "error");
     } finally {
       setSaving(false);
+    }
+  };
+
+  const openEditResultModal = async (student) => {
+    try {
+      setEditingStudent(student);
+      setShowEditModal(true);
+
+      const result = await apiGet(`/rank/result/${student.student_id}/`);
+      setEditForm({
+        rank: result.rank ?? "",
+        status: result.status || "P",
+        ogpa: result.ogpa ?? "",
+        marks: result.marks ?? "",
+        result_year: result.result_year || new Date().getFullYear(),
+      });
+    } catch (err) {
+      console.error(err);
+      setShowEditModal(false);
+      setEditingStudent(null);
+      showToast("Failed to load result for editing", "error");
+    }
+  };
+
+  const saveEditedResult = async () => {
+    if (!editingStudent) return;
+
+    try {
+      setEditSaving(true);
+
+      await apiPut(`/rank/result/edit/${editingStudent.student_id}/`, {
+        rank: editForm.rank === "" ? null : Number(editForm.rank),
+        status: editForm.status,
+        ogpa: editForm.ogpa,
+        marks: editForm.marks === "" ? null : editForm.marks,
+        result_year: Number(editForm.result_year),
+      });
+
+      showToast("Result updated successfully");
+      setShowEditModal(false);
+      setEditingStudent(null);
+      await searchResults();
+    } catch (err) {
+      console.error(err);
+      showToast("Failed to update result", "error");
+    } finally {
+      setEditSaving(false);
     }
   };
 
@@ -541,6 +599,7 @@ export default function StudentResults() {
                       <th style={styles.th}>Marks</th>
                       <th style={styles.th}>Status</th>
                       <th style={styles.th}>Rank</th>
+                      <th style={styles.th}>Action</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -564,6 +623,14 @@ export default function StudentResults() {
                         </td>
                         <td style={styles.td}>
                           <span style={styles.rankBadge}>#{student.rank || "-"}</span>
+                        </td>
+                        <td style={styles.td}>
+                          <button
+                            style={styles.editButton}
+                            onClick={() => openEditResultModal(student)}
+                          >
+                            Edit
+                          </button>
                         </td>
                       </tr>
                     ))}
@@ -765,6 +832,113 @@ export default function StudentResults() {
                     </div>
                   </div>
                 )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {showEditModal && (
+          <div style={styles.modalOverlay} onClick={() => setShowEditModal(false)}>
+            <div style={styles.editModal} onClick={(e) => e.stopPropagation()}>
+              <div style={styles.modalHeader}>
+                <h5 style={styles.modalTitle}>
+                  Edit Result
+                  {editingStudent?.student_name ? ` - ${editingStudent.student_name}` : ""}
+                </h5>
+                <button
+                  className="modal-close"
+                  style={styles.modalClose}
+                  onClick={() => setShowEditModal(false)}
+                >
+                  x
+                </button>
+              </div>
+
+              <div style={styles.modalBody}>
+                <div style={styles.editFormGrid}>
+                  <div style={styles.formGroup}>
+                    <label style={styles.formLabel}>Rank</label>
+                    <input
+                      type="number"
+                      min="1"
+                      max="3"
+                      style={styles.formInput}
+                      value={editForm.rank}
+                      onChange={(e) =>
+                        setEditForm({ ...editForm, rank: e.target.value })
+                      }
+                    />
+                  </div>
+
+                  <div style={styles.formGroup}>
+                    <label style={styles.formLabel}>Status</label>
+                    <select
+                      style={styles.formSelect}
+                      value={editForm.status}
+                      onChange={(e) =>
+                        setEditForm({ ...editForm, status: e.target.value })
+                      }
+                    >
+                      <option value="P" style={styles.formSelectOption}>Pass</option>
+                      <option value="F" style={styles.formSelectOption}>Fail</option>
+                    </select>
+                  </div>
+
+                  <div style={styles.formGroup}>
+                    <label style={styles.formLabel}>OGPA</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      style={styles.formInput}
+                      value={editForm.ogpa}
+                      onChange={(e) =>
+                        setEditForm({ ...editForm, ogpa: e.target.value })
+                      }
+                    />
+                  </div>
+
+                  <div style={styles.formGroup}>
+                    <label style={styles.formLabel}>Marks</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      style={styles.formInput}
+                      value={editForm.marks}
+                      onChange={(e) =>
+                        setEditForm({ ...editForm, marks: e.target.value })
+                      }
+                    />
+                  </div>
+
+                  <div style={styles.formGroup}>
+                    <label style={styles.formLabel}>Result Year</label>
+                    <input
+                      type="number"
+                      style={styles.formInput}
+                      value={editForm.result_year}
+                      onChange={(e) =>
+                        setEditForm({ ...editForm, result_year: e.target.value })
+                      }
+                    />
+                  </div>
+                </div>
+
+                <div style={styles.modalFooter}>
+                  <button
+                    style={styles.cancelButton}
+                    disabled={editSaving}
+                    onClick={() => setShowEditModal(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    style={styles.saveButton}
+                    disabled={editSaving}
+                    onClick={saveEditedResult}
+                  >
+                    {editSaving ? "Saving..." : "Save"}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -1184,6 +1358,18 @@ const styles = {
     fontSize: "13px",
     fontWeight: "600",
   },
+  editButton: {
+    padding: "7px 14px",
+    background: "rgba(52, 211, 153, 0.08)",
+    border: "1px solid rgba(52, 211, 153, 0.16)",
+    borderRadius: "8px",
+    color: "#34d399",
+    fontSize: "13px",
+    fontWeight: "600",
+    cursor: "pointer",
+    fontFamily: "inherit",
+    transition: "all 0.2s ease",
+  },
   statusPass: {
     display: "inline-block",
     padding: "4px 12px",
@@ -1247,6 +1433,17 @@ const styles = {
     border: "1px solid rgba(52, 211, 153, 0.08)",
     boxShadow: "0 24px 64px rgba(0,0,0,0.6), 0 0 40px rgba(52, 211, 153, 0.02)",
   },
+  editModal: {
+    background: "#0a140e",
+    borderRadius: "20px",
+    maxWidth: "560px",
+    width: "100%",
+    maxHeight: "90vh",
+    display: "flex",
+    flexDirection: "column",
+    border: "1px solid rgba(52, 211, 153, 0.08)",
+    boxShadow: "0 24px 64px rgba(0,0,0,0.6), 0 0 40px rgba(52, 211, 153, 0.02)",
+  },
   modalHeader: {
     display: "flex",
     justifyContent: "space-between",
@@ -1283,6 +1480,11 @@ const styles = {
     gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
     gap: "16px",
     marginBottom: "20px",
+  },
+  editFormGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+    gap: "16px",
   },
   formGroup: {
     display: "flex",
@@ -1471,9 +1673,22 @@ const styles = {
   modalFooter: {
     display: "flex",
     justifyContent: "flex-end",
+    gap: "12px",
     marginTop: "20px",
     paddingTop: "20px",
     borderTop: "1px solid rgba(52, 211, 153, 0.06)",
+  },
+  cancelButton: {
+    padding: "12px 22px",
+    background: "rgba(255,255,255,0.03)",
+    border: "1px solid rgba(52, 211, 153, 0.12)",
+    borderRadius: "10px",
+    color: "rgba(255,255,255,0.65)",
+    fontSize: "14px",
+    fontWeight: "600",
+    cursor: "pointer",
+    fontFamily: "inherit",
+    transition: "all 0.2s ease",
   },
   saveButton: {
     padding: "12px 28px",
