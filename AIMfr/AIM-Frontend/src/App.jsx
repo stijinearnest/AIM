@@ -5,6 +5,7 @@ import Rank from "./rank/rank";
 import Placement from "./placement/placement";
 import RegisterUser from "./admin/registerUser";
 import StudentResults from "./results/StudentResults";
+import StudentProfile from "./student/StudentProfile";
 function App() {
   return (
     <BrowserRouter>
@@ -14,6 +15,7 @@ function App() {
          <Route path="/rank" element={<Rank />} />
          <Route path="/placement" element={<Placement />} />
          <Route path="/register-user" element={<RegisterUser />} />
+         <Route path="/student-profile" element={<StudentProfile />} />
          <Route
   path="/student-results"
   element={<StudentResults />}

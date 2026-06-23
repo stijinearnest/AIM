@@ -2,6 +2,8 @@ import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { apiGet, apiPost } from "../api/apiService";
 import aimLogo from "../assets/aim-logo1.png";
+import Toast from "../components/Toast";
+import { isActiveStudent } from "../utils/studentStatus";
 
 const getPhotoSrc = (photo) => {
   if (!photo) return "";
@@ -42,6 +44,7 @@ export default function StudentResults() {
   const [students, setStudents] = useState([]);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [showDropdown, setShowDropdown] = useState(false);
+  const [toast, setToast] = useState(null);
   const containerRef = useRef(null);
   const dropdownRef = useRef(null);
 
@@ -84,6 +87,12 @@ export default function StudentResults() {
   const handleSignOut = () => {
     localStorage.clear();
     navigate("/");
+  };
+
+  const showToast = (message, type = "success") => {
+    setToast({ message, type });
+    window.clearTimeout(showToast.timer);
+    showToast.timer = window.setTimeout(() => setToast(null), 3200);
   };
 
   useEffect(() => {
@@ -131,6 +140,8 @@ export default function StudentResults() {
       if (filters.year_of_admn)
         params.push(`year_of_admn=${filters.year_of_admn}`);
 
+      params.push("is_studying=true");
+
       const response = await apiGet(
         `/result/student-results/?${params.join("&")}`
       );
@@ -161,10 +172,10 @@ export default function StudentResults() {
   const loadStudents = async () => {
     try {
       const response = await apiGet(
-        `/students/by-programme/?year_of_admn=${resultForm.year_of_admn}&programme_id=${resultForm.programme_id}`
+        `/students/by-programme/?year_of_admn=${resultForm.year_of_admn}&programme_id=${resultForm.programme_id}&is_studying=true`
       );
 
-      const studentsWithFields = response.students.map((student) => ({
+      const studentsWithFields = (response.students || []).filter(isActiveStudent).map((student) => ({
         ...student,
         photo: student.photo || "",
         rank: "",
@@ -176,7 +187,7 @@ export default function StudentResults() {
       setStudents(studentsWithFields);
     } catch (err) {
       console.error(err);
-      alert("Failed to load students");
+      showToast("Failed to load students", "error");
     }
   };
 
@@ -200,13 +211,13 @@ export default function StudentResults() {
       };
 
       await apiPost("/result/result/add/", payload);
-      alert("Results saved successfully");
+      showToast("Results saved successfully");
       setShowModal(false);
       setStudents([]);
       searchResults();
     } catch (err) {
       console.error(err);
-      alert("Failed to save results");
+      showToast("Failed to save results", "error");
     } finally {
       setSaving(false);
     }
@@ -214,6 +225,7 @@ export default function StudentResults() {
 
   return (
     <div style={styles.page} ref={containerRef}>
+      <Toast toast={toast} onClose={() => setToast(null)} />
       {/* Enhanced starfield with parallax */}
       <div style={styles.starField}>
         {STARS.map((s, i) => {
@@ -732,7 +744,7 @@ export default function StudentResults() {
                                   setStudents(updated);
                                 } catch (err) {
                                   console.error(err);
-                                  alert("Failed to read selected photo");
+                                  showToast("Failed to read selected photo", "error");
                                 }
                               }}
                             />

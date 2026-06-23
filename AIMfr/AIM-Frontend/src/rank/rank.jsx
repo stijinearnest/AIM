@@ -2,6 +2,8 @@ import { useCallback, useEffect, useMemo, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { apiGet, apiPost } from "../api/apiService";
 import aimLogo from "../assets/aim-logo1.png";
+import Toast from "../components/Toast";
+import { isActiveStudent } from "../utils/studentStatus";
 
 const getPhotoSrc = (photo) => {
   if (!photo) return "";
@@ -43,6 +45,7 @@ export default function Rank() {
   const [filterProgrammes, setFilterProgrammes] = useState([]);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [showDropdown, setShowDropdown] = useState(false);
+  const [toast, setToast] = useState(null);
   const containerRef = useRef(null);
   const dropdownRef = useRef(null);
 
@@ -85,6 +88,12 @@ export default function Rank() {
   const handleSignOut = () => {
     localStorage.clear();
     navigate("/");
+  };
+
+  const showToast = (message, type = "success") => {
+    setToast({ message, type });
+    window.clearTimeout(showToast.timer);
+    showToast.timer = window.setTimeout(() => setToast(null), 3200);
   };
 
   const loadRanks = useCallback(async () => {
@@ -141,6 +150,10 @@ export default function Rank() {
               `/students/student/?stud_id=${studentRank.student_id}`
             );
 
+            if (studentDetails.is_studying === false) {
+              return null;
+            }
+
             return {
               ...studentRank,
               admission_no: studentDetails.admn_no,
@@ -164,7 +177,7 @@ export default function Rank() {
         })
       );
 
-      setRanks(ranksWithStudentDetails);
+      setRanks(ranksWithStudentDetails.filter(Boolean));
     } catch (error) {
       console.error(error);
       setErrorMessage("Unable to load rank details.");
@@ -226,6 +239,8 @@ const applyFilters = async () => {
       queryParams.push(`year_of_admn=${filters.year_of_admn}`);
     }
 
+    queryParams.push("is_studying=true");
+
     const query =
       queryParams.length > 0
         ? `/result?${queryParams.join("&")}`
@@ -233,7 +248,7 @@ const applyFilters = async () => {
 
     const rankList = await apiGet(query);
 
-    setRanks(rankList);
+    setRanks(Array.isArray(rankList) ? rankList.filter(isActiveStudent) : []);
   } catch (error) {
     console.error(error);
   } finally {
@@ -260,10 +275,10 @@ const resetFilters = () => {
   const loadStudents = async () => {
     try {
       const response = await apiGet(
-        `/students/by-programme/?year_of_admn=${resultForm.year_of_admn}&programme_id=${resultForm.programme_id}`
+        `/students/by-programme/?year_of_admn=${resultForm.year_of_admn}&programme_id=${resultForm.programme_id}&is_studying=true`
       );
 
-      const studentsWithFields = response.students.map((student) => ({
+      const studentsWithFields = (response.students || []).filter(isActiveStudent).map((student) => ({
         ...student,
         photo: student.photo || "",
         rank: "",
@@ -314,14 +329,14 @@ const resetFilters = () => {
       console.log(payload);
 
       const response = await apiPost("/result/result/add/", payload);
-      alert("Results saved successfully");
+      showToast("Results saved successfully");
       console.log(response);
 
       setShowModal(false);
       loadRanks();
     } catch (error) {
       console.error(error);
-      alert("Failed to save results");
+      showToast("Failed to save results", "error");
     } finally {
       setSaving(false);
     }
@@ -363,6 +378,7 @@ const resetFilters = () => {
 
   return (
     <div style={styles.page} ref={containerRef}>
+      <Toast toast={toast} onClose={() => setToast(null)} />
       {/* ambient starfield with enhanced parallax and glow */}
       <div style={styles.starField}>
         {STARS.map((s, i) => {
@@ -863,7 +879,7 @@ const resetFilters = () => {
                                   setStudents(updated);
                                 } catch (error) {
                                   console.error(error);
-                                  alert("Failed to read selected photo");
+                                  showToast("Failed to read selected photo", "error");
                                 }
                               }}
                             />

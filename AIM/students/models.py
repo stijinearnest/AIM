@@ -8,7 +8,7 @@ class Student(models.Model):
 
     name = models.CharField(max_length=255)
     year_of_admn = models.IntegerField()
-
+    is_studying = models.BooleanField(default=True)
     dob = models.DateField(null=True, blank=True)
     sex = models.CharField(max_length=1)
 

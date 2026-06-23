@@ -6,6 +6,7 @@ from .views import (
     GetStudent,
     GetStudentsByAdmissionYearAndProgramme,
     GetAllDepartments,
+    UpdateStudentStatus
 )
 
 urlpatterns = [
@@ -22,5 +23,10 @@ urlpatterns = [
         "by-programme/",
         GetStudentsByAdmissionYearAndProgramme.as_view(),
         name="get-students-by-admission-year-and-programme",
+    ),
+    path(
+        "students/update-status/",
+        UpdateStudentStatus.as_view(),
+        name="update-student-status",
     ),
 ]

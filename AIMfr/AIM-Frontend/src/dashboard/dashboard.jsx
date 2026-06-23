@@ -281,6 +281,20 @@ export default function Dashboard() {
             </span>
             <span style={styles.navCardLabel}>Student Results</span>
           </button>
+          <button
+            className="nav-card"
+            style={styles.navCard}
+            onClick={() => handleTabChange("student-profile")}
+          >
+            <span style={styles.navCardIcon}>
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" strokeLinecap="round" strokeLinejoin="round" />
+                <circle cx="12" cy="7" r="4" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M16 11l2 2 4-4" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </span>
+            <span style={styles.navCardLabel}>Student Profile</span>
+          </button>
         </nav>
 
         {/* Content Area */}
@@ -474,7 +488,7 @@ const styles = {
   },
   cardRow: {
     display: "grid",
-    gridTemplateColumns: "repeat(4, minmax(100px, 1fr))",
+    gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
     justifyContent: "center",
     gap: "20px",
     marginBottom: "40px",
@@ -482,7 +496,7 @@ const styles = {
   },
   adminCardRow: {
     display: "grid",
-    gridTemplateColumns: "repeat(4, minmax(100px, 1fr))",
+    gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
     justifyContent: "center",
     gap: "20px",
     marginBottom: "40px",

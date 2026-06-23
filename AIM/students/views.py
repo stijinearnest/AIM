@@ -239,6 +239,7 @@ class GetStudent(APIView):
                 "marks_twelth": student.marks_twelth,
                 "board_twelth": student.board_twelth,
                 "photo": student.photo,
+                "is_studying":student.is_studying,
                 "differently_abled": student.differently_abled,
                 "date_of_admission": student.date_of_admission,
                 "date_of_leaving": student.date_of_leaving,
@@ -247,6 +248,42 @@ class GetStudent(APIView):
             status=status.HTTP_200_OK,
         )
 
+class UpdateStudentStatus(APIView):
+
+    def put(self, request):
+        stud_id = request.data.get("stud_id")
+        is_studying = request.data.get("is_studying")
+
+        if stud_id is None:
+            return Response(
+                {"stud_id": "stud_id is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if is_studying is None:
+            return Response(
+                {"is_studying": "is_studying is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            student = Student.objects.get(stud_id=stud_id)
+        except Student.DoesNotExist:
+            return Response(
+                {"student": "Student does not exist."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        student.is_studying = is_studying
+        student.save()
+
+        return Response(
+            {
+                "message": "Student status updated successfully.",
+                "stud_id": student.stud_id,
+                "is_studying": student.is_studying,
+            }
+        )
 
 class GetStudentsByAdmissionYearAndProgramme(APIView):
     # permission_classes = [IsAuthenticated]
@@ -321,6 +358,7 @@ class GetStudentsByAdmissionYearAndProgramme(APIView):
                         "year_of_admn": student.year_of_admn,
                         "programme_id": student.programme_id,
                         "photo": student.photo,
+                        "is_studying":student.is_studying
                     }
                     for student in students
                 ],
