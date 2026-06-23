@@ -552,7 +552,7 @@ const resetFilters = () => {
           <div style={styles.header}>
             <div style={styles.headerLeft}>
               <div style={styles.titleWrapper}>
-                <h2 style={styles.title}>🏆 Rank Holders</h2>
+                <h2 style={styles.title}>Rank Holders</h2>
                 <p style={styles.subtitle}>
                   {isAdmin
                     ? "Rankings and performance across all departments"
@@ -689,7 +689,7 @@ const resetFilters = () => {
                             <span style={styles.rankBadge}>#{student.rank || "-"}</span>
                           </td>
                           <td style={styles.td}>{student.student_name}</td>
-                          <td style={styles.td}>{student.admission_no || "-"}</td>
+                          <td style={styles.td}>{Number(student.admission_no) || "-"}</td>
                           {isAdmin && (
                             <td style={styles.td}>
                               {student.department_name || `Department ${student.department_id || "-"}`}
@@ -699,7 +699,7 @@ const resetFilters = () => {
                           <td style={styles.td}>
                             <span style={styles.ogpaBadge}>{student.ogpa || "N/A"}</span>
                           </td>
-                          <td style={styles.td}>{student.marks || "N/A"}</td>
+                          <td style={styles.td}>{Number(student.marks )|| "N/A"}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -794,6 +794,7 @@ const resetFilters = () => {
                   <div style={styles.studentTableWrapper}>
                     <div style={styles.resultHeader}>
                       <span></span>
+                      <span>Registration No.</span>
                       <span>OGPA</span>
                       <span>Marks</span>
                       <span>Rank</span>
@@ -818,7 +819,7 @@ const resetFilters = () => {
                             )}
                             <span style={styles.studentNameText}>{student.name}</span>
                           </div>
-
+                          <span style={styles.studentNameText}>{student.uty_reg_no || "-"}</span>
                           <input
                             style={styles.modalInput}
                             value={student.ogpa}
@@ -1385,7 +1386,7 @@ dropdown: {
   },
   resultHeader: {
     display: "grid",
-    gridTemplateColumns: "minmax(260px, 1fr) 110px 110px 90px 120px 100px",
+    gridTemplateColumns: "minmax(260px, 1fr) 160px 110px 110px 90px 120px 100px",
     gap: "12px",
     alignItems: "center",
     padding: "12px",
@@ -1406,7 +1407,7 @@ dropdown: {
   },
   resultRow: {
     display: "grid",
-    gridTemplateColumns: "minmax(260px, 1fr) 110px 110px 90px 120px 100px",
+    gridTemplateColumns: "minmax(260px, 1fr) 130px 110px 110px 90px 120px 100px",
     gap: "12px",
     alignItems: "center",
     padding: "10px 12px",
@@ -1425,6 +1426,8 @@ dropdown: {
     fontSize: "13px",
     whiteSpace: "nowrap",
   },
+
+
   studentPhoto: {
     width: "42px",
     height: "42px",

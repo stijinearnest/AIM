@@ -457,7 +457,7 @@ export default function StudentResults() {
           <div style={styles.header}>
             <div style={styles.headerLeft}>
               <div style={styles.titleWrapper}>
-                <h2 style={styles.title}>📊 Student Results</h2>
+                <h2 style={styles.title}>Student Results</h2>
                 <p style={styles.subtitle}>
                   {isAdmin
                     ? "View and search student performance records"
@@ -605,8 +605,8 @@ export default function StudentResults() {
                   <tbody>
                     {results.map((student) => (
                       <tr key={student.student_id} style={styles.tr}>
-                        <td style={styles.td}>{student.admn_no || "-"}</td>
-                        <td style={styles.td}>{student.roll_no || "-"}</td>
+                        <td style={styles.td}>{Number(student.admn_no) || "-"}</td>
+                        <td style={styles.td}>{student.uty_reg_no || "-"}</td>
                         <td style={styles.td}>
                           <span style={styles.studentName}>{student.student_name}</span>
                         </td>
@@ -615,7 +615,7 @@ export default function StudentResults() {
                         <td style={styles.td}>
                           <span style={styles.ogpaBadge}>{student.ogpa || "N/A"}</span>
                         </td>
-                        <td style={styles.td}>{student.marks || "N/A"}</td>
+                        <td style={styles.td}>{Number(student.marks) || "N/A"}</td>
                         <td style={styles.td}>
                           <span style={student.status === "P" ? styles.statusPass : styles.statusFail}>
                             {student.status === "P" ? "Pass" : student.status === "F" ? "Fail" : student.status || "-"}

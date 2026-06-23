@@ -14,6 +14,9 @@ const clearStoredTokens = () => {
   localStorage.removeItem("refresh_token");
 };
 
+const isAuthEndpoint = (url = "") =>
+  url.includes("/users/login/") || url.includes("/users/token/refresh/");
+
 const refreshAccessToken = async () => {
   const refreshToken = localStorage.getItem("refresh_token");
 
@@ -38,9 +41,11 @@ const refreshAccessToken = async () => {
 
 api.interceptors.request.use(
   (config) => {
+    const requestUrl = config.url || "";
     const token = localStorage.getItem("access_token");
 
-    if (token) {
+    // Do not attach stale auth headers to login/refresh requests.
+    if (token && !isAuthEndpoint(requestUrl)) {
       config.headers.Authorization = `Bearer ${token}`;
     }
 
@@ -57,9 +62,7 @@ api.interceptors.response.use(
 
     const originalRequest = error.config;
     const requestUrl = originalRequest?.url || "";
-    const isAuthRequest =
-      requestUrl.includes("/users/login/") ||
-      requestUrl.includes("/users/token/refresh/");
+    const isAuthRequest = isAuthEndpoint(requestUrl);
 
     if (
       error.response?.status !== 401 ||

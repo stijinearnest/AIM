@@ -388,8 +388,6 @@ export default function StudentProfile() {
                       <th style={styles.th}>Student</th>
                       <th style={styles.th}>Admission No</th>
                       <th style={styles.th}>Roll No</th>
-                      <th style={styles.th}>Department</th>
-                      <th style={styles.th}>Programme</th>
                       <th style={styles.th}>Year</th>
                       <th style={styles.th}>Status</th>
                       <th style={styles.th}>Action</th>
@@ -416,14 +414,8 @@ export default function StudentProfile() {
                               <span style={styles.studentName}>{name}</span>
                             </div>
                           </td>
-                          <td style={styles.td}>{student.admn_no || "-"}</td>
-                          <td style={styles.td}>{student.roll_no || "-"}</td>
-                          <td style={styles.td}>
-                            {student.department_name || student.department?.department_name || "-"}
-                          </td>
-                          <td style={styles.td}>
-                            {student.programme_name || student.programme?.programme_name || "-"}
-                          </td>
+                          <td style={styles.td}>{Number(student.admn_no) || "-"}</td>
+                          <td style={styles.td}>{student.uty_reg_no || "-"}</td>
                           <td style={styles.td}>{student.year_of_admn || "-"}</td>
                           <td style={styles.td}>
                             <span style={isStudying ? styles.activeBadge : styles.inactiveBadge}>

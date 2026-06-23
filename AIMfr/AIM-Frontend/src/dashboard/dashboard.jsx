@@ -239,6 +239,7 @@ export default function Dashboard() {
             className="nav-card"
             style={styles.navCard}
             onClick={() => handleTabChange("placement")}
+            disabled
           >
             <span style={styles.navCardIcon}>
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="2">
