@@ -134,7 +134,6 @@ class ResultAddView(APIView):
         submitted_student_ids = set(student_ids)
 
         extra_student_ids = sorted(submitted_student_ids - group_student_ids)
-        missing_group_student_ids = sorted(group_student_ids - submitted_student_ids)
 
         if extra_student_ids:
             return Response(
@@ -147,27 +146,10 @@ class ResultAddView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        if missing_group_student_ids:
-            return Response(
-                {
-                    "student_id": (
-                        "Result must be provided for every student in the selected "
-                        f"batch/programme/department. Missing student id(s): "
-                        f"{missing_group_student_ids}"
-                    )
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        group_results = Result.objects.filter(student__year_of_admn=year_of_admn)
-        if programme_ids is not None:
-            group_results = group_results.filter(student__programme_id__in=programme_ids)
-
         with transaction.atomic():
-            deleted_count, _ = group_results.exclude(student_id__in=student_ids).delete()
-
             for item in results:
                 student = students[item["student_id"]]
+
                 if "photo" in item:
                     student.photo = item["photo"]
                     student.save(update_fields=["photo"])
@@ -184,10 +166,7 @@ class ResultAddView(APIView):
                 )
 
         return Response(
-            {
-                "message": "Results updated successfully",
-                "removed_old_results": deleted_count,
-            },
+            {"message": "Results updated successfully"},
             status=status.HTTP_200_OK,
         )
 

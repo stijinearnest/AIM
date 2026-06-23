@@ -349,7 +349,7 @@ export default function RegisterUser() {
           <div style={styles.header}>
             <div style={styles.headerLeft}>
               <div style={styles.titleWrapper}>
-                <h1 style={styles.title}>👤 Register User</h1>
+                <h1 style={styles.title}>Register User</h1>
                 <p style={styles.subtitle}>Create a new AIM user account.</p>
               </div>
             </div>

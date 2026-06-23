@@ -1,7 +1,7 @@
 
 from django.db import models
 from students.models import Student
-
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 class Result(models.Model):
     STATUS_CHOICES = [
@@ -17,10 +17,15 @@ class Result(models.Model):
 
     rank = models.PositiveIntegerField(null=True, blank=True)
     status = models.CharField(max_length=1, choices=STATUS_CHOICES, default="P")
-    ogpa = models.DecimalField(max_digits=4, decimal_places=2)
-    marks = models.DecimalField(
-        max_digits=6,
-        decimal_places=2,
+    ogpa = models.DecimalField(
+    max_digits=4,
+    decimal_places=2,
+    validators=[
+        MinValueValidator(0),
+        MaxValueValidator(10.0)
+    ]
+)
+    marks = models.IntegerField(
         null=True,
         blank=True,
     )

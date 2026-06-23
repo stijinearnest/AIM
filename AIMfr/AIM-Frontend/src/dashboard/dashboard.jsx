@@ -237,8 +237,15 @@ export default function Dashboard() {
 
           <button
             className="nav-card"
-            style={styles.navCard}
-            onClick={() => handleTabChange("placement")}
+             style={{
+              ...styles.navCard,
+              opacity: 0.5,
+              cursor: "not-allowed",
+              background: "rgba(8, 14, 11, 0.25)",
+              border: "1px solid rgba(255, 255, 255, 0.08)",
+              filter: "grayscale(100%)",
+            }}
+            // onClick={() => handleTabChange("placement")}
             disabled
           >
             <span style={styles.navCardIcon}>

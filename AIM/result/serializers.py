@@ -7,6 +7,8 @@ class RankListSerializer(serializers.ModelSerializer):
     student_name = serializers.CharField(source="student.name", read_only=True)
     year_of_admn = serializers.IntegerField(source="student.year_of_admn", read_only=True)
     programme_id = serializers.IntegerField(source="student.programme_id", read_only=True)
+    uty_reg_no= serializers.CharField(source="student.uty_reg_no")
+    is_studying= serializers.BooleanField(source="student.is_studying")
     programme_name = serializers.SerializerMethodField()
     department_id = serializers.SerializerMethodField()
     department = serializers.SerializerMethodField()
@@ -18,6 +20,8 @@ class RankListSerializer(serializers.ModelSerializer):
             "student_name",
             "year_of_admn",
             "programme_id",
+            "uty_reg_no",
+            "is_studying",
             "programme_name",
             "department_id",
             "department",
@@ -116,7 +120,8 @@ class StudentResultSerializer(serializers.ModelSerializer):
     source="student.roll_no",
     allow_null=True
 )
-
+    uty_reg_no= serializers.CharField(source="student.uty_reg_no")
+    is_studying= serializers.BooleanField(source="student.is_studying")
     programme_name = serializers.CharField(
         source="student.programme.pgm_name"
     )
@@ -135,6 +140,8 @@ class StudentResultSerializer(serializers.ModelSerializer):
             "student_id",
             "admn_no",
             "roll_no",
+            "uty_reg_no",
+            "is_studying",
             "student_name",
             "department_name",
             "programme_name",

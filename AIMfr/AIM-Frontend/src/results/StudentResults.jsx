@@ -106,6 +106,12 @@ export default function StudentResults() {
     showToast.timer = window.setTimeout(() => setToast(null), 3200);
   };
 
+  const allLoadedStudentsHaveRequiredResults =
+    students.length > 0 &&
+    students.every(
+      (student) => String(student.ogpa).trim() !== "" && String(student.marks).trim() !== ""
+    );
+
   useEffect(() => {
     loadDepartments();
   }, []);
@@ -203,6 +209,11 @@ export default function StudentResults() {
   };
 
   const saveResults = async () => {
+    if (!allLoadedStudentsHaveRequiredResults) {
+      showToast("Enter OGPA and marks for every loaded student before saving", "error");
+      return;
+    }
+
     try {
       setSaving(true);
 
@@ -216,8 +227,8 @@ export default function StudentResults() {
           photo: student.photo || null,
           rank: student.rank === "" ? null : Number(student.rank),
           status: student.status || "P",
-          ogpa: student.ogpa === "" ? "0.00" : student.ogpa,
-          marks: student.marks === "" ? null : student.marks,
+          ogpa: student.ogpa,
+          marks: student.marks,
         })),
       };
 
@@ -591,10 +602,8 @@ export default function StudentResults() {
                   <thead>
                     <tr>
                       <th style={styles.th}>Admission No</th>
-                      <th style={styles.th}>Roll No</th>
+                      <th style={styles.th}>Registration No</th>
                       <th style={styles.th}>Name</th>
-                      <th style={styles.th}>Department</th>
-                      <th style={styles.th}>Programme</th>
                       <th style={styles.th}>OGPA</th>
                       <th style={styles.th}>Marks</th>
                       <th style={styles.th}>Status</th>
@@ -603,15 +612,14 @@ export default function StudentResults() {
                     </tr>
                   </thead>
                   <tbody>
-                    {results.map((student) => (
+                    {results.map((student) => 
+                    student.is_studying ?  (
                       <tr key={student.student_id} style={styles.tr}>
                         <td style={styles.td}>{Number(student.admn_no) || "-"}</td>
                         <td style={styles.td}>{student.uty_reg_no || "-"}</td>
                         <td style={styles.td}>
                           <span style={styles.studentName}>{student.student_name}</span>
                         </td>
-                        <td style={styles.td}>{student.department_name || "-"}</td>
-                        <td style={styles.td}>{student.programme_name || "-"}</td>
                         <td style={styles.td}>
                           <span style={styles.ogpaBadge}>{student.ogpa || "N/A"}</span>
                         </td>
@@ -633,7 +641,7 @@ export default function StudentResults() {
                           </button>
                         </td>
                       </tr>
-                    ))}
+                    ):null)}
                   </tbody>
                 </table>
               </div>
@@ -821,13 +829,23 @@ export default function StudentResults() {
                     </div>
 
                     <div style={styles.modalFooter}>
+                      <div style={styles.saveHelpText}>
+                         OGPA and marks are required for every loaded student before saving.
+                      </div>
                       <button
                         className="save-button"
-                        style={styles.saveButton}
-                        disabled={saving}
+                        style={{
+                          ...styles.saveButton,
+                          opacity: saving || !allLoadedStudentsHaveRequiredResults ? 0.55 : 1,
+                        }}
+                        disabled={saving || !allLoadedStudentsHaveRequiredResults}
                         onClick={saveResults}
                       >
-                        {saving ? "Saving..." : "Save Results"}
+                        {saving
+                          ? "Saving..."
+                          : allLoadedStudentsHaveRequiredResults
+                            ? "Save Results"
+                            : "Complete OGPA and marks"}
                       </button>
                     </div>
                   </div>
@@ -1672,11 +1690,18 @@ const styles = {
   },
   modalFooter: {
     display: "flex",
+    flexDirection: "column",
+    alignItems: "stretch",
     justifyContent: "flex-end",
     gap: "12px",
     marginTop: "20px",
     paddingTop: "20px",
     borderTop: "1px solid rgba(52, 211, 153, 0.06)",
+  },
+  saveHelpText: {
+    color: "rgba(255,255,255,0.52)",
+    fontSize: "13px",
+    lineHeight: 1.5,
   },
   cancelButton: {
     padding: "12px 22px",

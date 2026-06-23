@@ -96,6 +96,12 @@ export default function Rank() {
     showToast.timer = window.setTimeout(() => setToast(null), 3200);
   };
 
+  const allLoadedStudentsHaveRequiredResults =
+    students.length > 0 &&
+    students.every(
+      (student) => String(student.ogpa).trim() !== "" && String(student.marks).trim() !== ""
+    );
+
   const loadRanks = useCallback(async () => {
     try {
       const departmentId = Number(localStorage.getItem("department_id"));
@@ -306,6 +312,11 @@ const resetFilters = () => {
 }, [loadRanks, isAdmin]);
 
   const saveResults = async () => {
+    if (!allLoadedStudentsHaveRequiredResults) {
+      showToast("Enter OGPA and marks for every loaded student before saving", "error");
+      return;
+    }
+
     try {
       setSaving(true);
 
@@ -321,8 +332,8 @@ const resetFilters = () => {
           photo: student.photo || null,
           rank: student.rank === "" ? null : Number(student.rank),
           status: student.status || "P",
-          ogpa: student.ogpa === "" ? "0.00" : student.ogpa,
-          marks: student.marks === "" ? null : student.marks,
+          ogpa: student.ogpa,
+          marks: student.marks,
         })),
       };
 
@@ -355,17 +366,43 @@ const resetFilters = () => {
   const groupedRanks = useMemo(() => {
     const groups = rankedStudents.reduce((acc, student) => {
       const admissionYear = student.year_of_admn || "Unknown";
-      if (!acc[admissionYear]) acc[admissionYear] = [];
-      acc[admissionYear].push(student);
+      const departmentName =
+        student.department_name || student.department?.department_name || `Department ${student.department_id || "-"}`;
+      const programmeName = student.programme_name || student.programme?.programme_name || "Programme";
+      const groupKey = isAdmin
+        ? `${departmentName}-${programmeName}-${admissionYear}`
+        : admissionYear;
+
+      if (!acc[groupKey]) {
+        acc[groupKey] = {
+          key: groupKey,
+          admissionYear,
+          departmentName,
+          programmeName,
+          students: [],
+        };
+      }
+
+      acc[groupKey].students.push(student);
       return acc;
     }, {});
 
-    return Object.entries(groups).sort(([yearA], [yearB]) => {
-      const numericYearA = Number(yearA) || 0;
-      const numericYearB = Number(yearB) || 0;
+    return Object.values(groups).sort((groupA, groupB) => {
+      const numericYearA = Number(groupA.admissionYear) || 0;
+      const numericYearB = Number(groupB.admissionYear) || 0;
+      if (numericYearA !== numericYearB) {
+        return numericYearB - numericYearA;
+      }
+
+      if (isAdmin) {
+        const departmentCompare = groupA.departmentName.localeCompare(groupB.departmentName);
+        if (departmentCompare !== 0) return departmentCompare;
+        return groupA.programmeName.localeCompare(groupB.programmeName);
+      }
+
       return numericYearB - numericYearA;
     });
-  }, [rankedStudents]);
+  }, [isAdmin, rankedStudents]);
 
   if (loading) {
     return (
@@ -657,16 +694,29 @@ const resetFilters = () => {
           )}
 
           <div style={styles.rankSections}>
-            {groupedRanks.map(([admissionYear, studentsInYear]) => (
-              <section key={admissionYear} style={styles.yearSection}>
+            {groupedRanks.map((group) => (
+              <section key={group.key} style={styles.yearSection}>
                 <div style={styles.yearSectionHeader}>
                   <div>
-                    <h5 style={styles.tableTitle}>Admission Year {admissionYear}</h5>
-                    <p style={styles.yearSectionSubtitle}>
-                      Session {Number(admissionYear) ? Number(admissionYear) + 3 : "-"}
-                    </p>
+                    {isAdmin ? (
+                      <>
+                        <h5 style={styles.tableTitle}>{group.departmentName}</h5>
+                        <p style={styles.programmeTitle}>{group.programmeName}</p>
+                        <p style={styles.yearSectionSubtitle}>
+                          Admission Year {group.admissionYear} | Session{" "}
+                          {Number(group.admissionYear) ? Number(group.admissionYear) + 3 : "-"}
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <h5 style={styles.tableTitle}>Admission Year {group.admissionYear}</h5>
+                        <p style={styles.yearSectionSubtitle}>
+                          Session {Number(group.admissionYear) ? Number(group.admissionYear) + 3 : "-"}
+                        </p>
+                      </>
+                    )}
                   </div>
-                  <span style={styles.tableBadge}>{studentsInYear.length} Students</span>
+                  <span style={styles.tableBadge}>{group.students.length} Students</span>
                 </div>
 
                 <div style={styles.tableWrapper}>
@@ -683,8 +733,8 @@ const resetFilters = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {studentsInYear.map((student) => (
-                        <tr key={`${admissionYear}-${student.student_id}`} style={styles.tr}>
+                      {group.students.map((student) => (
+                        <tr key={`${group.key}-${student.student_id}`} style={styles.tr}>
                           <td style={styles.td}>
                             <span style={styles.rankBadge}>#{student.rank || "-"}</span>
                           </td>
@@ -890,12 +940,22 @@ const resetFilters = () => {
                     </div>
 
                     <div style={styles.modalFooter}>
+                      <div style={styles.saveHelpText}>
+                         OGPA and marks are required for every loaded student before saving.
+                      </div>
                       <button
-                        style={styles.saveButton}
-                        disabled={saving}
+                        style={{
+                          ...styles.saveButton,
+                          opacity: saving || !allLoadedStudentsHaveRequiredResults ? 0.55 : 1,
+                        }}
+                        disabled={saving || !allLoadedStudentsHaveRequiredResults}
                         onClick={saveResults}
                       >
-                        {saving ? "Saving..." : "Save Results"}
+                        {saving
+                          ? "Saving..."
+                          : allLoadedStudentsHaveRequiredResults
+                            ? "Save Results"
+                            : "Complete OGPA and marks"}
                       </button>
                     </div>
                   </div>
@@ -1180,6 +1240,12 @@ dropdown: {
     fontSize: "16px",
     fontWeight: "500",
     margin: 0,
+  },
+  programmeTitle: {
+    color: "rgba(255,255,255,0.72)",
+    fontSize: "14px",
+    fontWeight: "500",
+    margin: "4px 0 0",
   },
   tableBadge: {
     padding: "4px 12px",
@@ -1504,10 +1570,18 @@ dropdown: {
   },
   modalFooter: {
     display: "flex",
+    flexDirection: "column",
+    alignItems: "stretch",
     justifyContent: "flex-end",
+    gap: "12px",
     marginTop: "20px",
     paddingTop: "20px",
     borderTop: "1px solid rgba(52, 211, 153, 0.06)",
+  },
+  saveHelpText: {
+    color: "rgba(255,255,255,0.52)",
+    fontSize: "13px",
+    lineHeight: 1.5,
   },
   saveButton: {
     padding: "12px 28px",
