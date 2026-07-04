@@ -1,0 +1,17 @@
+"pgm_id","pgm_name","dept_id","no_of_sems","grad_level"
+1,B.A. Economics,1,6,UG
+2,M.A. English,2,4,PG
+3,B.A. History,4,6,UG
+4,M.A. History,4,4,PG
+5,B.A. Malayalam,5,6,UG
+6,B.Sc. Plant Science,7,6,UG
+7,B.Sc. Polymer Chemistry,8,6,UG
+8,B.Sc. Mathematics,10,6,UG
+9,B.Sc. Physics,11,6,UG
+10,M.Sc. Physics,11,4,PG
+11,B.Sc. Statistics,12,6,UG
+12,M.Sc. Statistics,12,4,PG
+13,B.Sc. Zoology,13,6,UG
+14,B.Com.,14,6,UG
+15,M.Com.,14,4,PG
+16,Integrated M.Sc. in Computer Science,9,10,IN

@@ -1,0 +1,516 @@
+"caste_id","caste_name","religion_id","cat_id"
+1,Adi Andhra,2,2
+2,Adi Dravida,2,2
+3,Adi Karnataka,2,2
+4,Ajila,2,2
+5,Arunthathiyar,2,2
+6,Ayyanavar,2,2
+7,Baira,2,2
+8,Bakuda,2,2
+9,Bathada,2,2
+10,Bharatar,2,2
+11,Chakkilian,2,2
+12,Chamar,2,2
+13,Chandala,2,2
+14,Chemmar,2,2
+15,Cherama,2,2
+16,Cheraman,2,2
+17,Cheramar,2,2
+18,Cheruman,2,2
+19,Domban,2,2
+20,Gosangi,2,2
+21,Hasla,2,2
+22,Holeya,2,2
+23,InterCaste,4,2
+24,Kadaiyan,2,2
+25,Kakkalan,2,2
+26,Kakkan,2,2
+27,Kalladi,2,2
+28,Kanakkan,2,2
+29,Kannakkan,2,2
+30,Kavara,2,2
+31,Koodan,2,2
+32,Koosa,2,2
+33,Kudumban,2,2
+34,Kurava,2,2
+35,Kuravan,2,2
+36,Kuravar,2,2
+37,Maila,2,2
+38,Malayan,2,2
+39,Mannan,2,2
+40,Matha,2,2
+41,Matha Pulayan,2,2
+42,Moger,2,2
+43,Muchi,2,2
+44,Mundala,2,2
+45,Nalakeyava,2,2
+46,Nalkadaya,2,2
+47,Nayadi,2,2
+48,Nerian,2,2
+49,Padanna,2,2
+50,Padannan,2,2
+51,Pallan,2,2
+52,Pambada,2,2
+53,Panan,2,2
+54,Paraiya,2,2
+55,Paraiyan,2,2
+56,Paravan,2,2
+57,Paraya,2,2
+58,Parayan,2,2
+59,Parayar,2,2
+60,Pathiyan,2,2
+61,Perumannan,2,2
+62,Pulaya,2,2
+63,Pulayan,2,2
+64,Pulayar,2,2
+65,Pulluvan,2,2
+66,Puthirai Vannan,2,2
+67,Raneyar,2,2
+68,Samagra,2,2
+69,Samban,2,2
+70,Sambava,2,2
+71,Sambavan,2,2
+72,Sambavar,2,2
+73,Semman,2,2
+74,Sidhana,2,2
+75,Sidhanar,2,2
+76,Thachar(other than Carpenter),2,2
+77,Thandan,2,2
+78,Thotti,2,2
+79,Vallon,2,2
+80,Valluvan,2,2
+81,Vannan,2,2
+82,Vedar,2,2
+83,Velan,2,2
+84,Vettuvan,2,2
+85,Vettuvan,2,2
+86,Wayanad Pulayan,2,2
+87,Agas(OBC),2,4
+88,Andra Nair,2,5
+89,Anduru Nair,2,5
+90,Araya,2,5
+91,Arayavathi,2,5
+92,Attingal Chetties(OBC),2,4
+93,Ayar(OBC),2,4
+94,Ayiravar(OBC),2,4
+95,Bovi-Megeyar,2,5
+96,Chakkala Nair(OBC),2,4
+97,Chakkala(OBC),2,4
+98,Chakkamar,2,5
+99,Chaliyar(OBC),2,4
+100,Chavalakkaran(OBC),2,4
+101,Chemman,2,5
+102,Chetties(OBC),2,4
+103,Converted SC,2,5
+104,Devanga(OBC),2,4
+105,Dheevara,2,5
+106,Dheevaran,2,5
+107,Elur Chetties(OBC),2,4
+108,Ezhavathi(OBC),2,4
+109,Ezhuthachan(OBC),2,4
+110,Ganaka(OBC),2,4
+111,Jangam(OBC),2,4
+112,Kaikolan(OBC),2,4
+113,Kalari Panicker(OBC),2,4
+114,Kalarikurup(OBC),2,4
+115,Kallan Moopan(OBC),2,4
+116,"Kallan Mooppar(OBC)""",2,4
+117,Kani(OBC),2,4
+118,Kanisan(OBC),2,4
+119,Kanisu(OBC),2,4
+120,Kaniya Panicker(OBC),2,4
+121,Kaniyan(OBC),2,4
+122,Kannadiyan(OBC),2,4
+123,Kavuthiyan(OBC),2,4
+124,Kerala Muthali(OBC),2,4
+125,Kolayar(OBC),2,4
+126,Kottar Chetties(OBC),2,4
+127,Kudumbi,2,5
+128,Kulala,2,5
+129,Kullalan,2,5
+130,Kumbaran,2,5
+131,Kusavar,2,5
+132,Madiga,2,5
+133,Madivala(OBC),2,4
+134,Maniyani(OBC),2,4
+135,Marathi,2,5
+136,Matapathi(OBC),2,4
+137,Mayar(OBC),2,4
+138,Mogaveerar,2,5
+139,Mokaya,2,5
+140,Mooppar(OBC),2,4
+141,Mukkuvan,2,5
+142,Nagarathar(OBC),2,4
+143,Naicken(OBC),2,4
+144,Naicken(OBC),2,4
+145,Odan,2,5
+146,Pandaram(OBC),2,4
+147,Pandithar(OBC),2,4
+148,Paniyakkal,2,5
+149,Parakka Chetties(OBC),2,4
+150,Pattariya(OBC),2,4
+151,Perumkollan(OBC),2,4
+152,Peruvannan,2,5
+153,Reddiar(OBC),2,4
+154,Sadhu Chetti(OBC),2,4
+155,Saliya(OBC),2,4
+156,Thachan(other than Carpenter),2,5
+157,Thelungu Chetti(OBC),2,4
+158,Tholkollan(OBC),2,4
+159,Thottain(OBC),2,4
+160,Vaduka(OBC),2,4
+161,Vaduvan(OBC),2,4
+162,Vairagi(OBC),2,4
+163,Valan,2,5
+164,Valanchiyar,2,5
+165,Vanibha Chetti(OBC),2,4
+166,Vanika Vaisya(OBC),2,4
+167,vanika(OBC),2,4
+168,vaniya(OBC),2,4
+169,Vaniyan(OBC),2,4
+170,Vannathan(OBC),2,4
+171,Varnnavan,2,5
+172,Vathis(OBC),2,4
+173,Veerasaiva(OBC),2,4
+174,Velaan,2,5
+175,Velaar,2,5
+176,Veluthedan(OBC),2,4
+177,Veluthedath Nair(OBC),2,4
+178,Vilakithala Nair(OBC),2,4
+179,Vilkurup(OBC),2,4
+180,Agamudaiyans,2,4
+181,Alwar,2,4
+182,Ambalakkaran,2,4
+183,Ampattan,2,4
+184,Anglo Indian,1,4
+185,Annadan,2,4
+186,Archukatlandu,2,4
+187,Aremahrati,2,4
+188,Asari,2,4
+189,Attagara,2,4
+190,Balolika,2,4
+191,Bandari,2,4
+192,Barber,2,4
+193,Bestha,2,4
+194,Billava,2,4
+195,Bissoy,2,4
+196,Blacksmith,2,4
+197,Bondil,2,4
+198,Boya,2,4
+199,Boyan,2,4
+200,Chakravar,2,4
+201,Chaptegara,2,4
+202,Chatadi,2,4
+203,Chattada Srivaishnava,2,4
+204,Dasari,2,4
+205,Devadiga,2,4
+206,Devalkar,2,4
+207,Dhakkada,2,4
+208,Dommara,2,4
+209,Dudekula,2,4
+210,Eruman,2,4
+211,Esanattu Kallar,2,4
+212,Ezhava,2,4
+213,Ezhuvan,2,4
+214,Galada Konkam,2,4
+215,Gammala,2,4
+216,Gandla,2,4
+217,Gangavars,2,4
+218,Gatti,2,4
+219,Godaba,2,4
+220,Goldsmith,2,4
+221,Golla,2,4
+222,Gonde,2,4
+223,Gowda,2,4
+224,GSB,2,4
+225,Gudigara,2,4
+226,Hegde,2,4
+227,Idiga,2,4
+228,Illuvan,2,4
+229,Isai Vellalar,2,4
+230,Jakkulas,2,4
+231,Jandara,2,4
+232,Jetty,2,4
+233,Jews,2,4
+234,Jogi,2,4
+235,Kabbera,2,4
+236,Kadappatan,2,4
+237,Kadayan,2,4
+238,Kalali,2,4
+239,Kalari Panikkar,2,4
+240,Kalavanthula,2,4
+241,Kalingi,2,4
+242,Kallan,2,4
+243,Kallasari,2,4
+244,Kalthachan,2,4
+245,Kammala,2,4
+246,Kammalan,2,4
+247,Kannan,2,4
+248,Kannian,2,4
+249,Karikalabhaktulu,2,4
+250,Karnibhakatula,2,4
+251,Karuvan,2,4
+252,Kavathi,2,4
+253,Kelasi,2,4
+254,Kharvi,2,4
+255,khatri,2,4
+256,Khodala,2,4
+257,Kidaran,2,4
+258,Kitara,2,4
+259,Koikulam,2,4
+260,Kolaries,2,4
+261,Kollan,2,4
+262,Kongu Vellala Gounder,2,4
+263,Koppalavelams,2,4
+264,Korachas,2,4
+265,Koteyar,2,4
+266,Krishnanvaka,2,4
+267,Kudiyan,2,4
+268,Kuppam,2,4
+269,Kuruba,2,4
+270,Labbai,2,4
+271,Lambadis,2,4
+272,Latin Catholic,1,4
+273,LC Nadar,2,4
+274,Leather Smith,2,4
+275,Madugar,2,4
+276,Magaran,2,4
+277,Mahendara,2,4
+278,Mahratta,2,4
+279,Malayal Kammala,2,4
+280,Malayaman,2,4
+281,Male,2,4
+282,Mangala,2,4
+283,Maniyanies,2,4
+284,Mappila,3,4
+285,Marassari,2,4
+286,Maravan,2,4
+287,Maravar,2,4
+288,Maruthuvar,2,4
+289,Medara,2,4
+290,Medavar,2,4
+291,Melakudi,2,4
+292,Methan,2,4
+293,Modi Benda,2,4
+294,Moili,2,4
+295,Moniagar,2,4
+296,Mooppanar,2,4
+297,Moovari,2,4
+298,Muduva,2,4
+299,Mukhari,2,4
+300,Muniyani,2,4
+301,Musari,2,4
+302,Muslim,3,4
+303,Muthali,2,4
+304,Muthaliyar,2,4
+305,Muthiryyana,2,4
+306,Mutracha,2,4
+307,Nadar,2,4
+308,Nagavamsam,2,4
+309,Nainar,2,4
+310,Nakkale,2,4
+311,Namdev,2,4
+312,Nasivan,2,4
+313,Nathaman,2,4
+314,Nattu Gounder,2,4
+315,Navithiyan,2,4
+316,Nolkodaya,2,4
+317,Nou_Brahma,2,4
+318,Odiya,2,4
+319,Oiulu,2,4
+320,Omanaite,2,4
+321,Oriya,2,4
+322,Padmasali,2,4
+323,Padyachi Villayan,2,4
+324,Pala Gounder,2,4
+325,Pala Vellala Gounder,2,4
+326,Palli,2,4
+327,Pamula,2,4
+328,Pandi Kammala,2,4
+329,Pangadikara,2,4
+330,Pannayar,2,4
+331,Panniyar,2,4
+332,Parivara Bunt,2,4
+333,Parkavakulam,2,4
+334,Parvatharajakulam,2,4
+335,Patnulkaran,2,4
+336,Pattanavan,2,4
+337,Pattusali,2,4
+338,Pentias,2,4
+339,Perika,2,4
+340,Perike Bafija,2,4
+341,Pichigunta,2,4
+342,Poosari Gounder,2,4
+343,Poraya,2,4
+344,Pranopakari,2,4
+345,Pulsalavadu,2,4
+346,Puraigiri Khatriya,2,4
+347,Rajaka,2,4
+348,Rajapuri,2,4
+349,Reddi,2,4
+350,Ronas,2,4
+351,Sagara,2,4
+352,Saiva Pillai,2,4
+353,Saivavellala,2,4
+354,Sakravar,2,4
+355,Sale,2,4
+356,Sali,2,4
+357,Saliyan,2,4
+358,Sedan,2,4
+359,Senaikudayan,2,4
+360,Senaithalavar,2,4
+361,Senapathulu,2,4
+362,Setti Balija,2,4
+363,Sheragara,2,4
+364,SIUC,2,4
+365,SIUC Nadar,2,4
+366,Siva Nadar,2,4
+367,Siviar,2,4
+368,Sourashtra,2,4
+369,Srisayana,2,4
+370,Sugalis,2,4
+371,Thandaman,2,4
+372,Thandan,2,4
+373,Thatapu,2,4
+374,Thatan,2,4
+375,Thegata Veera Kshathriya,2,4
+376,Thigala,2,4
+377,Thiyya,2,4
+378,Thogata,2,4
+379,Tholikula,2,4
+380,Tholuva Naicker,2,4
+381,Thondaiman,2,4
+382,Thoriyan,2,4
+383,Thurupu Rapus,2,4
+384,Uppara,2,4
+385,Ural Goundan,2,4
+386,Ural Goundan,2,4
+387,Vaisavi,2,4
+388,Vaisya,2,4
+389,Vaisyachetti,2,4
+390,Vakkaliga,2,4
+391,Valiyan,2,4
+392,Vanika Saiva,2,4
+393,Vaniya Chettiar,2,4
+394,Vanniyakulakshethriya,2,4
+395,Veddai,2,4
+396,Vellala,2,4
+397,Vellala Gounder,2,4
+398,Vellala Pillai,2,4
+399,Vethakkara,2,4
+400,Vettalakara Naicker,2,4
+401,Villasan,2,4
+402,Virakodi Vellalars,2,4
+403,Viswakarma,2,4
+404,Vodde,2,4
+405,Wilkurup,2,4
+406,X-Nadar,2,4
+407,Adiyan,2,3
+408,Aranadan,2,3
+409,Arandan,2,3
+410,Cholanaickan,2,3
+411,Eravallan,2,3
+412,Hill Pulaya,2,3
+413,Irulan,2,3
+414,Irular,2,3
+415,Jenu Kurumban,2,3
+416,Kadar,2,3
+417,Kanikaran,2,3
+418,Kanikkar,2,3
+419,Karavazhi Pulayan,2,3
+420,Karimpalan,2,3
+421,Kattunayakan,2,3
+422,Kochuvelan,2,3
+423,Konga Malayan,2,3
+424,Koraga,2,3
+425,Kudiya,2,3
+426,Kurichchan,2,3
+427,Kurichiyan,2,3
+428,Kurumans,2,3
+429,Kurumba Pulayan,2,3
+430,Kurumban,2,3
+431,Kurumbar,2,3
+432,Kurumbas,2,3
+433,Maha Malasar,2,3
+434,Mala Arayan,2,3
+435,Mala Kuruman,2,3
+436,Mala Panickar,2,3
+437,Mala Pulayan,2,3
+438,Mala Vedan,2,3
+439,Mala Vettuvan,2,3
+440,Malai Arayan,2,3
+441,Malai Pandaram,2,3
+442,Malai Vedan,2,3
+443,Malakkuravan,2,3
+444,Malasar,2,3
+445,Malayan,2,3
+446,Malayarayar,2,3
+447,Mannan,2,3
+448,Marati,2,3
+449,Mavilan,2,3
+450,Melakudi,2,3
+451,Mudugar,2,3
+452,Muduvan,2,3
+453,Mulla Kuruman,2,3
+454,Mullu Kuruman,2,3
+455,Muthuvan,2,3
+456,Nattu Malayan,2,3
+457,Paliyan,2,3
+458,Palleyan,2,3
+459,Palliyan,2,3
+460,Palliyar,2,3
+461,Pamba Pulayan,2,3
+462,Paniyan,2,3
+463,Ten Kurumban,2,3
+464,Thachanadan,2,3
+465,Thachanadan Moopan,2,3
+466,Ulladan,2,3
+467,Ullatan,2,3
+468,Uraly,2,3
+469,Vetta Kuruman,2,3
+470,Wayanad Kadar,2,3
+471,Brahmin,2,1
+472,Chakkalath Nair,2,1
+473,Christian,1,1
+474,Christian Catholic,1,1
+475,Christian Jacobite,1,1
+476,Christian Malankara,1,1
+477,Christian Marthoma,1,1
+478,Christian Orthodox,1,1
+479,Christian Pentacost,1,1
+480,CSI,1,1
+481,Duptan,2,1
+482,GSB,2,1
+483,Jacobite,1,1
+484,Kaimal,2,1
+485,Kartha,2,1
+486,Kaunder,2,1
+487,Kshethriya,2,1
+488,Kurup,2,1
+489,Mannadia,2,1
+490,Marar,2,1
+491,Menon,2,1
+492,Mosath,2,1
+493,Naidu,2,1
+494,Nair,2,1
+495,Nambeesan,2,1
+496,Nambiar,2,1
+497,Namboothiri,2,1
+498,Nayanar,2,1
+499,Pillai,2,1
+500,Pisharody,2,1
+501,Pothuval,2,1
+502,Pushpaka,2,1
+503,Rawther,2,1
+504,RC,1,1
+505,RCSC,2,1
+506,Shrudan,2,1
+507,Suriyani,1,1
+508,Syrian Catholic,1,1
+509,Tharakan,2,1
+510,Thevar,2,1
+511,Warrier,2,1
+512,Yadava,2,4
+513,Pitarar,2,1
+514,Yogi,2,4
+515,No Caste,4,1
